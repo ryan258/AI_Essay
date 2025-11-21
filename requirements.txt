@@ -1,0 +1,17 @@
+# OpenRouter API (uses OpenAI SDK)
+openai>=1.0.0
+
+# Environment variable management
+python-dotenv>=1.0.0
+
+# Configuration management
+pyyaml>=6.0
+
+# Testing (optional)
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
+
+# Legacy script dependencies (optional - only if running old scripts)
+# anthropic>=0.40.0
+# google-genai>=0.3.0
+# xai-sdk>=0.1.0

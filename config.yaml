@@ -1,0 +1,40 @@
+# AI Essay Configuration
+
+# Default model settings
+defaults:
+  max_tokens: 1000
+  temperature: 1.0
+  retry_limit: 25
+  cycles: 100
+
+# Experiment-specific configurations
+experiments:
+  batch1:
+    name: "Response Uniqueness Testing"
+    description: "Tests how often models generate duplicate responses"
+    default_prompt: "How many Rs are in the word strawberry?"
+    output_dir: "results/batch1"
+
+  batch2:
+    name: "Essay Generation & Thesis Extraction"
+    description: "Generates essays and extracts thesis statements"
+    essay_prompt: "Write a literacy narrative"
+    thesis_prompt: "For the below essay, pull out a quote that exemplifies the paper's thesis. This should be a direct quote from the essay and not a paraphrase or restatement."
+    output_dir: "results/batch2"
+
+  batch5:
+    name: "Topic Classification"
+    description: "Classifies topics from pre-generated essays"
+    topic_prompt: "In one or two words state the topic of the below essay. For example, if the essay is about learning to write, then you would say that the topic of the essay is \"writing.\" This can be applied to other topics, such as but not limited to: \"public speech,\" \"dance,\" \"reading,\" or \"public performance.\""
+    essay_file: "examples/batch5/essay.txt"
+    output_dir: "results/batch5"
+
+# Available models (OpenRouter)
+# Available models
+# You can use ANY model available on OpenRouter.
+# Find model IDs at: https://openrouter.ai/models
+# Examples:
+# - anthropic/claude-3-opus
+# - openai/gpt-4o
+# - google/gemini-flash-1.5
+
