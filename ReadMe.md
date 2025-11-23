@@ -66,6 +66,9 @@ uv run run_experiment.py batch5 --model google/gemini-flash-1.5 --essay-file exa
 # Draft essays using multiple AI models (NEW!)
 uv run python -m src.essay draft "The Impact of AI on Education" --models "anthropic/claude-3-haiku,openai/gpt-3.5-turbo"
 
+# Analyze essay structure and get recommendations (NEW!)
+uv run python -m src.essay analyze my_essay.txt
+
 # Research a topic
 uv run python -m src.essay research my_essay.txt --min-sources 3
 

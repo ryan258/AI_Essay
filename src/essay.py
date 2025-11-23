@@ -10,6 +10,7 @@ from rich.panel import Panel
 from .citations import CitationManager
 from .research import ResearchAssistant
 from .drafter import EssayDrafter
+from .analyzer import EssayAnalyzer
 from .models.openrouter import OpenRouterModel
 import asyncio
 
@@ -285,6 +286,40 @@ class EssayCLI:
                 console.print(f"[green]✅ {model_name}: {word_count} words → {res['file']}[/green]")
             else:
                 console.print(f"[red]❌ {model_name}: Failed ({res['error']})[/red]")
+
+    def analyze(self, input_file: str, model: str = None):
+        """
+        Analyze essay structure and provide recommendations.
+
+        Args:
+            input_file: Path to the essay file
+            model: Optional AI model for advanced thesis extraction
+        """
+        input_path = Path(input_file)
+        if not input_path.exists():
+            console.print(f"[red]Error: File {input_file} not found.[/red]")
+            return
+
+        essay_text = input_path.read_text()
+
+        # Initialize analyzer
+        ai_model = None
+        if model:
+            try:
+                ai_model = OpenRouterModel(model_name=model)
+                console.print(f"[dim]Using {model} for advanced analysis[/dim]")
+            except Exception as e:
+                console.print(f"[yellow]Warning: Could not initialize AI model ({e}). Using basic analysis.[/yellow]")
+
+        analyzer = EssayAnalyzer(model=ai_model)
+
+        console.print(Panel(f"Analyzing structure of {input_file}...", title="Essay Analyzer"))
+
+        # Analyze
+        structure = analyzer.analyze(essay_text)
+
+        # Print results
+        analyzer.print_analysis(structure)
 
 def main():
     fire.Fire(EssayCLI)
