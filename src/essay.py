@@ -6,11 +6,13 @@ import fire
 from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
+from rich.table import Table
 
 from .citations import CitationManager
 from .research import ResearchAssistant
 from .drafter import EssayDrafter
 from .analyzer import EssayAnalyzer
+from .improver import EssayImprover
 from .models.openrouter import OpenRouterModel
 import asyncio
 
@@ -320,6 +322,100 @@ class EssayCLI:
 
         # Print results
         analyzer.print_analysis(structure)
+
+    def improve(
+        self,
+        input_file: str,
+        cycles: int = 3,
+        target_score: int = 85,
+        model: str = None,
+        output_dir: str = "improvements"
+    ):
+        """
+        Iteratively improve an essay.
+
+        Args:
+            input_file: Path to the essay file.
+            cycles: Maximum number of improvement cycles.
+            target_score: Stop early once this score is met.
+            model: Optional model ID for AI-powered improvements.
+            output_dir: Directory to save the improved essay.
+        """
+        from datetime import datetime
+
+        input_path = Path(input_file)
+        if not input_path.exists():
+            console.print(f"[red]Error: File {input_file} not found.[/red]")
+            return
+
+        essay_text = input_path.read_text()
+
+        ai_model = None
+        if model:
+            try:
+                ai_model = OpenRouterModel(model_name=model)
+                console.print(f"[dim]Using {model} for improvements[/dim]")
+            except Exception as e:
+                console.print(f"[yellow]Warning: Could not initialize AI model ({e}). Falling back to heuristics.[/yellow]")
+
+        improver = EssayImprover(model=ai_model)
+
+        console.print(Panel(f"Improving {input_file} for clarity, grammar, and argument strength...", title="Essay Improver"))
+
+        def _progress(iteration: int, total: int) -> None:
+            console.print(f"[dim]Running improvement cycle {iteration}/{total}...[/dim]")
+
+        result = improver.improve(
+            essay_text,
+            cycles=cycles,
+            target_score=target_score,
+            progress_callback=_progress,
+        )
+
+        if not result.iterations:
+            console.print("[green]Essay already meets the target score. No changes applied.[/green]")
+            return
+
+        # Show score deltas per iteration
+        table = Table(show_header=True, header_style="bold")
+        table.add_column("Iter", width=6)
+        table.add_column("Clarity", width=14)
+        table.add_column("Grammar", width=14)
+        table.add_column("Argument", width=14)
+        table.add_column("Overall", width=14)
+        table.add_column("Model", width=10)
+
+        for step in result.iterations:
+            table.add_row(
+                str(step.iteration),
+                f"{step.scores_before.clarity:.1f} → {step.scores_after.clarity:.1f}",
+                f"{step.scores_before.grammar:.1f} → {step.scores_after.grammar:.1f}",
+                f"{step.scores_before.argument_strength:.1f} → {step.scores_after.argument_strength:.1f}",
+                f"{step.scores_before.overall:.1f} → {step.scores_after.overall:.1f}",
+                step.applied_model or "heuristic"
+            )
+
+        console.print(table)
+
+        # Show before/after snippets
+        def _snippet(text: str, length: int = 180) -> str:
+            return text[:length].strip() + ("..." if len(text) > length else "")
+
+        for step in result.iterations:
+            console.print(f"\n[bold]Iteration {step.iteration} preview[/bold]")
+            console.print(f"[dim]Before:[/dim] {_snippet(step.before_text)}")
+            console.print(f"[green]After:[/green] {_snippet(step.after_text)}")
+
+        # Save final essay
+        output_path = Path(output_dir)
+        output_path.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        final_file = output_path / f"{input_path.stem}_improved_{timestamp}.txt"
+        final_file.write_text(result.final_text)
+
+        status_color = "green" if result.reached_target else "yellow"
+        console.print(f"\n[{status_color}]Final overall score: {result.final_scores.overall:.1f} / 100 (target {target_score})[/{status_color}]")
+        console.print(f"[dim]Saved to {final_file}[/dim]\n")
 
 def main():
     fire.Fire(EssayCLI)
