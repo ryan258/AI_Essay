@@ -117,6 +117,111 @@ class EssayCLI:
             except Exception as e:
                 console.print(f"[red]Error generating bibliography: {e}[/red]")
 
+    def check_plagiarism(self, input_file: str, model: str = "anthropic/claude-3-haiku"):
+        """
+        Check an essay for potential plagiarism (uncited quotes).
+
+        Args:
+            input_file: Path to the essay file
+            model: AI model to use
+        """
+        input_path = Path(input_file)
+        if not input_path.exists():
+            console.print(f"[red]Error: File {input_file} not found.[/red]")
+            return
+
+        text = input_path.read_text()
+
+        try:
+            ai_model = OpenRouterModel(model_name=model)
+            manager = CitationManager(model=ai_model)
+        except Exception as e:
+            console.print(f"[red]Error initializing AI model: {e}[/red]")
+            return
+
+        console.print(Panel(f"Scanning {input_file} for plagiarism...", title="Plagiarism Checker"))
+        
+        issues = manager.check_plagiarism(text)
+        if not issues:
+            console.print("[green]No obvious plagiarism detected (all quotes appear cited).[/green]")
+        else:
+            console.print(f"[yellow]Found {len(issues)} potential issues:[/yellow]")
+            for i, issue in enumerate(issues, 1):
+                console.print(f"{i}. {issue}")
+
+    def summarize(self, query: str, limit: int = 3, model: str = "anthropic/claude-3-haiku"):
+        """
+        Find and summarize sources for a topic.
+
+        Args:
+            query: Topic to research
+            limit: Number of sources
+            model: AI model to use
+        """
+        try:
+            ai_model = OpenRouterModel(model_name=model)
+            assistant = ResearchAssistant(model=ai_model)
+        except Exception as e:
+            console.print(f"[red]Error initializing AI model: {e}[/red]")
+            return
+
+        console.print(Panel(f"Researching and summarizing: {query}", title="Research Assistant"))
+        
+        papers = assistant.search_papers(query, limit=limit)
+        if not papers:
+            console.print("[yellow]No papers found.[/yellow]")
+            return
+
+        for i, paper in enumerate(papers, 1):
+            console.print(f"[bold]{i}. {paper['title']}[/bold]")
+            summary = assistant.summarize_source(paper)
+            console.print(f"   [italic]{summary}[/italic]")
+            console.print(f"   URL: {paper['url']}\n")
+
+    def check_facts(self, input_file: str, claim: str, model: str = "anthropic/claude-3-haiku"):
+        """
+        Verify a specific claim using research from the essay's topic.
+
+        Args:
+            input_file: Path to the essay file (to get context/topic)
+            claim: The claim to verify
+            model: AI model to use
+        """
+        input_path = Path(input_file)
+        if not input_path.exists():
+            console.print(f"[red]Error: File {input_file} not found.[/red]")
+            return
+
+        text = input_path.read_text()
+
+        try:
+            ai_model = OpenRouterModel(model_name=model)
+            assistant = ResearchAssistant(model=ai_model)
+        except Exception as e:
+            console.print(f"[red]Error initializing AI model: {e}[/red]")
+            return
+
+        console.print(Panel(f"Fact checking claim: {claim}", title="Fact Checker"))
+        
+        # First, find relevant sources based on the claim
+        console.print("[dim]Finding relevant sources...[/dim]")
+        sources = assistant.search_papers(claim, limit=5)
+        
+        if not sources:
+            console.print("[red]Could not find sources to verify this claim.[/red]")
+            return
+
+        # Check the fact
+        console.print("[dim]Analyzing sources...[/dim]")
+        result = assistant.fact_check(claim, sources)
+        
+        if result['supported']:
+            console.print(f"[green]✅ Claim Supported (Confidence: {result.get('confidence', 0):.2f})[/green]")
+        else:
+            console.print(f"[red]❌ Claim Not Supported (Confidence: {result.get('confidence', 0):.2f})[/red]")
+        
+        console.print(f"\n[bold]Explanation:[/bold] {result.get('explanation', 'No explanation provided.')}")
+
 def main():
     fire.Fire(EssayCLI)
 

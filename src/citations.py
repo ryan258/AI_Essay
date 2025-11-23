@@ -119,7 +119,12 @@ class CitationManager:
             if Path(f"styles/{style}.csl").exists():
                  style_path = Path(f"styles/{style}.csl")
             else:
-                raise FileNotFoundError(f"Style file {style}.csl not found in {styles_dir}")
+                # List available styles
+                available = [f.stem for f in styles_dir.glob("*.csl")]
+                raise FileNotFoundError(
+                    f"Style file {style}.csl not found in {styles_dir}. "
+                    f"Available styles: {', '.join(available)}"
+                )
 
         try:
             bib_style = CitationStylesStyle(str(style_path), validate=False)
@@ -165,3 +170,34 @@ class CitationManager:
              year = source['issued']['date-parts'][0][0]
 
         return f"({author}, {year})"
+
+    def check_plagiarism(self, text: str) -> List[str]:
+        """
+        Identify potential plagiarism (quotes without nearby citations).
+
+        Args:
+            text: The essay text
+
+        Returns:
+            List of potential plagiarism instances (sentences or phrases)
+        """
+        if not self.model:
+            logger.warning("No AI model available for plagiarism check.")
+            return []
+
+        prompt = (
+            "Analyze the following text for potential plagiarism. "
+            "Identify direct quotes or specific data points that do NOT have "
+            "an accompanying citation (e.g., (Smith, 2023) or [1]). "
+            "Return ONLY the specific sentences or phrases that are missing citations, "
+            "one per line. If none, return nothing.\n\n"
+            f"Text:\n{text}"
+        )
+
+        success, response, error = self.model.call(prompt)
+        if not success:
+            logger.error(f"Failed to check plagiarism: {error}")
+            return []
+
+        issues = [line.strip() for line in response.split('\n') if line.strip()]
+        return issues

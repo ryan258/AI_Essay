@@ -143,3 +143,83 @@ class ResearchAssistant:
             
         except Exception:
             return []
+
+    def fact_check(self, claim: str, sources: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Verify if a claim is supported by the provided sources.
+
+        Args:
+            claim: The claim to verify
+            sources: List of source dictionaries (must contain 'abstract' or 'title')
+
+        Returns:
+            Dictionary with 'supported' (bool), 'confidence' (float), and 'explanation' (str)
+        """
+        if not self.model:
+            return {"supported": False, "confidence": 0.0, "explanation": "No AI model available."}
+
+        # Prepare source context
+        context = ""
+        for i, source in enumerate(sources, 1):
+            title = source.get('title', 'Unknown')
+            abstract = source.get('abstract', '')
+            if abstract:
+                context += f"Source {i} ({title}):\n{abstract}\n\n"
+
+        if not context:
+            return {"supported": False, "confidence": 0.0, "explanation": "No source context available."}
+
+        prompt = (
+            f"Verify the following claim based ONLY on the provided sources.\n\n"
+            f"Claim: {claim}\n\n"
+            f"Sources:\n{context}\n"
+            "Is the claim supported by the sources? Answer with JSON format:\n"
+            "{\n"
+            '  "supported": true/false,\n'
+            '  "confidence": 0.0-1.0,\n'
+            '  "explanation": "Brief explanation citing specific sources"\n'
+            "}"
+        )
+
+        success, response, error = self.model.call(prompt)
+        if not success:
+            return {"supported": False, "confidence": 0.0, "explanation": f"AI Error: {error}"}
+
+        try:
+            # Clean up response to ensure valid JSON (sometimes models add markdown)
+            clean_response = response.replace("```json", "").replace("```", "").strip()
+            import json
+            return json.loads(clean_response)
+        except Exception as e:
+            logger.error(f"Failed to parse fact check response: {e}")
+            return {"supported": False, "confidence": 0.0, "explanation": "Failed to parse AI response."}
+
+    def summarize_source(self, source: Dict[str, Any]) -> str:
+        """
+        Generate a concise summary of a source.
+
+        Args:
+            source: Source dictionary
+
+        Returns:
+            Summary string
+        """
+        if not self.model:
+            return source.get('abstract', 'No abstract available.')[:200] + "..."
+
+        title = source.get('title', 'Unknown Title')
+        abstract = source.get('abstract', '')
+        
+        if not abstract:
+            return f"{title}: No abstract available to summarize."
+
+        prompt = (
+            f"Summarize the following academic paper in 2-3 sentences for a general audience.\n\n"
+            f"Title: {title}\n"
+            f"Abstract: {abstract}"
+        )
+
+        success, response, error = self.model.call(prompt)
+        if success:
+            return response.strip()
+        return "Failed to generate summary."
