@@ -1,5 +1,7 @@
 import logging
 from typing import List, Dict, Any, Optional
+import signal
+from contextlib import contextmanager
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -12,6 +14,23 @@ from .models.base import AIModel
 # Constants
 MAX_ESSAY_LENGTH = 2000  # Token limit for API call
 DEFAULT_SEARCH_LIMIT = 5
+API_TIMEOUT = 30  # seconds
+
+@contextmanager
+def timeout(seconds):
+    """Context manager for timeout on API calls."""
+    def timeout_handler(signum, frame):
+        raise TimeoutError(f"API call exceeded {seconds} seconds")
+
+    # Set the signal handler and alarm
+    original_handler = signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(seconds)
+    try:
+        yield
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, original_handler)
+
 
 class ResearchAssistant:
     """Assists with finding sources and research."""
@@ -24,7 +43,7 @@ class ResearchAssistant:
             model: AIModel instance for analysis
         """
         self.model = model
-        self.sch = SemanticScholar()
+        self.sch = SemanticScholar(timeout=API_TIMEOUT)
 
     def search_papers(self, query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> List[Dict[str, Any]]:
         """
@@ -38,23 +57,30 @@ class ResearchAssistant:
             List of paper details
         """
         try:
+            logger.info(f"Searching Semantic Scholar for: '{query}'")
             results = self.sch.search_paper(query, limit=limit)
             papers = []
-            
+
             # Handle PaginatedResults or list
             items = results if isinstance(results, list) else results
-            
+
             for item in items:
+                if not item:
+                    continue
                 papers.append({
-                    "title": item.title,
-                    "url": item.url,
-                    "abstract": item.abstract,
-                    "year": item.year,
+                    "title": item.title or "Untitled",
+                    "url": item.url or "",
+                    "abstract": item.abstract or "",
+                    "year": item.year or 0,
                     "authors": [author.name for author in item.authors] if item.authors else [],
-                    "citationCount": item.citationCount,
-                    "paperId": item.paperId
+                    "citationCount": item.citationCount or 0,
+                    "paperId": item.paperId or ""
                 })
+            logger.info(f"Found {len(papers)} papers")
             return papers
+        except TimeoutError as e:
+            logger.error(f"Timeout searching papers for '{query}': {e}")
+            return []
         except Exception as e:
             logger.error(f"Error searching papers for '{query}': {e}")
             return []

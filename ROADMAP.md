@@ -2,6 +2,15 @@
 
 This roadmap charts the evolution from AI response testing tool (v2.0) to comprehensive essay creation and improvement platform (v3.0+).
 
+**📍 CURRENT STATUS (November 2024):**
+- ✅ v2.0: Complete - Research tool foundation with OpenRouter integration
+- ⏭️  Phase 1-2: NOT STARTED - Core essay creation features (drafting, analysis, improvement)
+- ✅ Phase 3: 80% COMPLETE - Research & citation capabilities implemented first
+- ⏸️  Phase 4-5: PENDING - Templates, UX, and community features
+
+**Note**: Phase 3 was built ahead of Phases 1-2 as a proof-of-concept for research capabilities.
+The roadmap phases below represent the original planning sequence, not implementation order.
+
 ---
 
 ## 🎯 Vision
@@ -308,9 +317,9 @@ uv run essay.py create \
 - [x] Detect claims that need citations
 - [x] Insert citations in any format (MLA, APA, Chicago, IEEE)
 - [x] Auto-generate bibliography
+- [x] Plagiarism prevention (detect uncited quotes)
 - [ ] Citation format switching (convert MLA → APA)
-- [ ] Inline citation suggestions
-- [ ] Plagiarism prevention (ensure all quotes are cited)
+- [ ] Inline citation suggestions (auto-insert at claim sites)
 
 **Technical**:
 - New `src/citations.py` module
@@ -342,9 +351,9 @@ uv run essay.py cite my_essay.txt \
 **Features**:
 - [x] Find relevant sources for essay topic
 - [x] Suggest quotes to support arguments
-- [ ] Fact-check claims in essay
-- [ ] Recommend additional research areas
-- [ ] Summarize sources for easy integration
+- [x] Fact-check claims in essay (with confidence scoring)
+- [x] Summarize sources for easy integration
+- [ ] Recommend additional research areas (AI-powered gap analysis)
 
 **Technical**:
 - Integration with Semantic Scholar API
