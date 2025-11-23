@@ -63,11 +63,23 @@ uv run run_experiment.py batch5 --model google/gemini-flash-1.5 --essay-file exa
 ### 4. Use Essay Tools (v3.0)
 
 ```bash
+# Draft essays using multiple AI models (NEW!)
+uv run python -m src.essay draft "The Impact of AI on Education" --models "anthropic/claude-3-haiku,openai/gpt-3.5-turbo"
+
 # Research a topic
 uv run python -m src.essay research my_essay.txt --min-sources 3
 
 # Add citations and bibliography
 uv run python -m src.essay cite my_essay.txt --style apa --generate-bibliography
+
+# Check for plagiarism (uncited quotes)
+uv run python -m src.essay check-plagiarism my_essay.txt
+
+# Fact check a specific claim
+uv run python -m src.essay check-facts my_essay.txt "AI improves student engagement"
+
+# Summarize research on a topic
+uv run python -m src.essay summarize "Impact of AI on writing skills" --limit 3
 ```
 ```
 

@@ -17,6 +17,7 @@ rich>=13.0.0
 # Testing
 pytest>=7.0.0
 pytest-cov>=4.0.0
+pytest-asyncio>=0.23.0
 
 # Legacy script dependencies (optional - only if running old scripts)
 # anthropic>=0.40.0

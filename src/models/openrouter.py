@@ -62,6 +62,9 @@ class OpenRouterModel(AIModel):
             base_url=self.OPENROUTER_BASE_URL
         )
 
+        # Lazy-initialize async client when needed
+        self._async_client = None
+
     def call(self, prompt: str) -> Tuple[bool, str, str]:
         """
         Call the OpenRouter model with a prompt.
@@ -74,6 +77,40 @@ class OpenRouterModel(AIModel):
         """
         try:
             completion = self.client.chat.completions.create(
+                model=self.model_id,
+                messages=[
+                    {"role": "system", "content": self.system_message},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=self.max_tokens,
+                temperature=self.temperature
+            )
+            return True, completion.choices[0].message.content, ""
+
+        except Exception as e:
+            return False, "", f"API Error: {str(e)}"
+
+    async def acall(self, prompt: str) -> Tuple[bool, str, str]:
+        """
+        Async call to the OpenRouter model with a prompt.
+
+        Args:
+            prompt: The prompt to send to the model
+
+        Returns:
+            Tuple of (success, response_text, error_message)
+        """
+        from openai import AsyncOpenAI
+
+        # Lazy-initialize async client on first use (reused for subsequent calls)
+        if self._async_client is None:
+            self._async_client = AsyncOpenAI(
+                api_key=self.api_key,
+                base_url=self.OPENROUTER_BASE_URL
+            )
+
+        try:
+            completion = await self._async_client.chat.completions.create(
                 model=self.model_id,
                 messages=[
                     {"role": "system", "content": self.system_message},

@@ -9,7 +9,9 @@ from rich.panel import Panel
 
 from .citations import CitationManager
 from .research import ResearchAssistant
-from .models.openrouter import OpenRouterModel  # Assuming this exists or we use a factory
+from .drafter import EssayDrafter
+from .models.openrouter import OpenRouterModel
+import asyncio
 
 console = Console()
 
@@ -221,6 +223,68 @@ class EssayCLI:
             console.print(f"[red]❌ Claim Not Supported (Confidence: {result.get('confidence', 0):.2f})[/red]")
         
         console.print(f"\n[bold]Explanation:[/bold] {result.get('explanation', 'No explanation provided.')}")
+
+    def draft(self, topic: str, models: str = "anthropic/claude-3-haiku,openai/gpt-3.5-turbo", output_dir: str = "drafts"):
+        """
+        Draft an essay using multiple AI models in parallel.
+
+        Args:
+            topic: The essay topic
+            models: Comma-separated list of model IDs
+            output_dir: Directory to save drafts
+        """
+        from datetime import datetime
+
+        model_list = [m.strip() for m in models.split(',')]
+        console.print(Panel(f"Drafting essay on '{topic}' using {len(model_list)} models...", title="Essay Drafter"))
+
+        # Initialize models
+        ai_models = []
+        for m in model_list:
+            try:
+                ai_models.append(OpenRouterModel(model_name=m))
+            except Exception as e:
+                console.print(f"[red]Error initializing {m}: {e}[/red]")
+
+        if not ai_models:
+            console.print("[red]No valid models available. Aborting.[/red]")
+            return
+
+        drafter = EssayDrafter(models=ai_models)
+
+        # Create timestamped output directory
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        topic_slug = topic.replace(" ", "_")[:50]  # Limit length
+        essay_dir = Path(output_dir) / f"{timestamp}_{topic_slug}"
+
+        # Run async drafting with proper event loop handling
+        try:
+            # Check if there's already a running event loop
+            try:
+                loop = asyncio.get_running_loop()
+                # We're in an async context, can't use asyncio.run()
+                console.print("[yellow]Warning: Cannot run in existing event loop context[/yellow]")
+                return
+            except RuntimeError:
+                # No running loop, safe to use asyncio.run()
+                results = asyncio.run(drafter.draft_essay(topic, essay_dir))
+        except Exception as e:
+            console.print(f"[red]Error during drafting: {e}[/red]")
+            import traceback
+            console.print(f"[dim]{traceback.format_exc()}[/dim]")
+            return
+
+        # Report results
+        console.print(f"\n[bold]Drafting Complete![/bold]")
+        console.print(f"[dim]Output directory: {essay_dir}[/dim]\n")
+
+        for res in results:
+            model_name = res['model']
+            if res['success']:
+                word_count = res.get('word_count', 0)
+                console.print(f"[green]✅ {model_name}: {word_count} words → {res['file']}[/green]")
+            else:
+                console.print(f"[red]❌ {model_name}: Failed ({res['error']})[/red]")
 
 def main():
     fire.Fire(EssayCLI)

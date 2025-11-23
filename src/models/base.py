@@ -48,6 +48,19 @@ class AIModel(ABC):
         """
         pass
 
+    @abstractmethod
+    async def acall(self, prompt: str) -> Tuple[bool, str, str]:
+        """
+        Async call to the AI model with a prompt.
+
+        Args:
+            prompt: The prompt to send to the model
+
+        Returns:
+            Tuple of (success, response_text, error_message)
+        """
+        pass
+
     def __repr__(self) -> str:
         """String representation of the model."""
         return (
