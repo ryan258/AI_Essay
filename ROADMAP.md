@@ -305,9 +305,9 @@ uv run essay.py create \
 ### 3.1: Citation Generator & Manager (Weeks 13-15)
 
 **Features**:
-- [ ] Detect claims that need citations
-- [ ] Insert citations in any format (MLA, APA, Chicago, IEEE)
-- [ ] Auto-generate bibliography
+- [x] Detect claims that need citations
+- [x] Insert citations in any format (MLA, APA, Chicago, IEEE)
+- [x] Auto-generate bibliography
 - [ ] Citation format switching (convert MLA → APA)
 - [ ] Inline citation suggestions
 - [ ] Plagiarism prevention (ensure all quotes are cited)
@@ -340,8 +340,8 @@ uv run essay.py cite my_essay.txt \
 ### 3.2: Research Assistant (Weeks 16-18)
 
 **Features**:
-- [ ] Find relevant sources for essay topic
-- [ ] Suggest quotes to support arguments
+- [x] Find relevant sources for essay topic
+- [x] Suggest quotes to support arguments
 - [ ] Fact-check claims in essay
 - [ ] Recommend additional research areas
 - [ ] Summarize sources for easy integration

@@ -1,20 +1,27 @@
 # AI Essay
 
-AI Essay is a research project exploring AI model responses, focusing on essay generation, classification, and response uniqueness testing across multiple models (Claude, GPT, Gemini, and Grok).
+AI Essay is evolving from a research tool into a comprehensive platform for creating, improving, and perfecting essays using multiple AI models.
 
 **Author**: Stephen Witty (switty@level500.com)
 **Collaborator**: Hannah Witty
 
 ## Features
 
+### v3.0: Essay Creation Platform (New!)
+- **Citation Generator**: Automatically detect claims and generate citations (APA, MLA, etc.)
+- **Research Assistant**: Find relevant academic sources and suggest quotes
+- **Bibliography Management**: Auto-generate bibliographies from sources
+- **Smart Suggestions**: AI-powered analysis of essay content for research needs
+
+### v2.0: Research Tool Foundation
 - **Unified API**: Access all models through OpenRouter with a single API key
-- **Modular Architecture**: Clean, maintainable codebase with proper separation of concerns
-- **Response Uniqueness Testing**: Measure how often models produce duplicate responses
-- **Essay Generation**: Generate essays and automatically extract thesis statements
-- **Topic Classification**: Classify essay topics from pre-generated content
-- **Multi-Model Support**: Test Claude, GPT, Gemini, and Grok with the same code
-- **CLI Interface**: Easy command-line usage with YAML configuration
-- **Metrics Tracking**: Comprehensive statistics on responses, timing, and word counts
+- **Modular Architecture**: Clean, maintainable codebase
+- **Response Uniqueness Testing**: Measure duplicate response rates
+- **Essay Generation**: Generate essays and extract thesis statements
+- **Topic Classification**: Classify essay topics
+- **Multi-Model Support**: Claude, GPT, Gemini, Grok
+- **CLI Interface**: Easy command-line usage
+- **Metrics Tracking**: Comprehensive statistics
 
 ## Quick Start
 
@@ -52,6 +59,16 @@ uv run run_experiment.py batch2 --model openai/gpt-4o --prompt "Write an essay a
 
 # Classify essay topics
 uv run run_experiment.py batch5 --model google/gemini-flash-1.5 --essay-file examples/batch5/essay.txt --cycles 10
+
+### 4. Use Essay Tools (v3.0)
+
+```bash
+# Research a topic
+uv run python -m src.essay research my_essay.txt --min-sources 3
+
+# Add citations and bibliography
+uv run python -m src.essay cite my_essay.txt --style apa --generate-bibliography
+```
 ```
 
 ## Project Structure
@@ -68,7 +85,10 @@ AI_Essay/
 ├── ROADMAP.md             # Refactoring plan
 ├── src/
 │   ├── __init__.py
-│   ├── experiment.py      # Experiment runners
+│   ├── essay.py           # Essay platform CLI (v3.0) ⭐
+│   ├── citations.py       # Citation manager
+│   ├── research.py        # Research assistant
+│   ├── experiment.py      # Experiment runners (v2.0)
 │   ├── metrics.py         # Statistics collection
 │   ├── utils.py           # Shared utilities
 │   └── models/
