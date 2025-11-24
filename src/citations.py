@@ -15,6 +15,8 @@ from .models.base import AIModel
 # Configure logging
 logger = logging.getLogger(__name__)
 
+InlineSuggestion = Dict[str, str]
+
 class CitationManager:
     """Manages citations, source lookups, and bibliography generation."""
 
@@ -225,3 +227,30 @@ class CitationManager:
 
         issues = [line.strip() for line in response.split('\n') if line.strip()]
         return issues
+
+    def suggest_inline_citations(
+        self,
+        text: str,
+        claims: List[str],
+        style: str = "apa"
+    ) -> List[InlineSuggestion]:
+        """
+        Suggest inline citations for detected claims using available sources.
+
+        Args:
+            text: Essay text
+            claims: Claims needing citation
+            style: Citation style to apply
+
+        Returns:
+            List of suggestions with 'claim' and 'citation'
+        """
+        if not self.sources:
+            return []
+
+        suggestions: List[InlineSuggestion] = []
+        for idx, claim in enumerate(claims):
+            source = self.sources[idx % len(self.sources)]
+            citation = self.format_citation(source["id"], style=style)
+            suggestions.append({"claim": claim, "citation": citation})
+        return suggestions

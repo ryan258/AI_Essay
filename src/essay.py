@@ -131,6 +131,8 @@ class EssayCLI:
         model: str = "anthropic/claude-3-haiku",
         output_file: str = None,
         annotate_missing: bool = True,
+        auto_insert: bool = True,
+        switch_to: str = None,
     ):
         """
         Add citation markers and optionally append a bibliography.
@@ -141,6 +143,8 @@ class EssayCLI:
             generate_bibliography: Whether to append a bibliography
             output_file: Optional output path for the cited essay
             annotate_missing: Insert inline citation markers for detected claims
+            auto_insert: Insert inline citations using available sources
+            switch_to: Convert inline citations/bibliography to this style (overrides style)
             model: AI model to use (default: anthropic/claude-3-haiku)
         """
         input_path = Path(input_file)
@@ -150,6 +154,7 @@ class EssayCLI:
 
         text = input_path.read_text()
         annotated_text = text
+        inline_style = switch_to or style
         
         # Initialize manager
         ai_model = self._init_model(model)
@@ -169,19 +174,46 @@ class EssayCLI:
             console.print(f"[green]Found {len(claims)} claims needing citation.[/green]")
             for i, claim in enumerate(claims, 1):
                 console.print(f"{i}. {claim}")
-            
-            if annotate_missing:
-                insertions = 0
+
+            inserted = 0
+            if auto_insert and manager.sources:
+                suggestions = manager.suggest_inline_citations(text, claims, style=inline_style)
+                for s in suggestions:
+                    claim = s["claim"]
+                    citation = s["citation"]
+                    if claim in annotated_text:
+                        annotated_text = annotated_text.replace(
+                            claim, f"{claim} {citation}", 1
+                        )
+                        inserted += 1
+                if inserted:
+                    console.print(f"[green]Inserted {inserted} inline citation(s) using {inline_style.upper()}.[/green]")
+                else:
+                    console.print("[yellow]Could not place inline citations (claims not found verbatim in text).[/yellow]")
+            elif auto_insert and not manager.sources:
+                console.print("[yellow]No sources available to insert inline citations; falling back to markers.[/yellow]")
+                if annotate_missing:
+                    for claim in claims:
+                        if claim in annotated_text:
+                            annotated_text = annotated_text.replace(
+                                claim, f"{claim} [citation needed]", 1
+                            )
+                            inserted += 1
+                    if inserted:
+                        console.print(f"[green]Inserted {inserted} citation marker(s) into the text.[/green]")
+            elif annotate_missing:
                 for claim in claims:
                     if claim in annotated_text:
                         annotated_text = annotated_text.replace(
                             claim, f"{claim} [citation needed]", 1
                         )
-                        insertions += 1
-                if insertions:
-                    console.print(f"[green]Inserted {insertions} citation marker(s) into the text.[/green]")
+                        inserted += 1
+                if inserted:
+                    console.print(f"[green]Inserted {inserted} citation marker(s) into the text.[/green]")
                 else:
                     console.print("[yellow]Detected claims but could not place markers (claims not found verbatim in text).[/yellow]")
+            else:
+                console.print("[dim]Inline insertion disabled (auto_insert/annotate_missing False).[/dim]")
         
         # 2. Generate bibliography if requested
         bibliography_block = ""
@@ -192,8 +224,9 @@ class EssayCLI:
             
             if manager.sources:
                 try:
-                    bib = manager.generate_bibliography(style=style)
-                    console.print(f"\n[bold]Bibliography ({style.upper()}):[/bold]")
+                    bib_style = inline_style
+                    bib = manager.generate_bibliography(style=bib_style)
+                    console.print(f"\n[bold]Bibliography ({bib_style.upper()}):[/bold]")
                     console.print(bib)
                     bibliography_block = "\n\n## Bibliography\n" + "\n".join(
                         f"- {line}" for line in bib.splitlines() if line.strip()
@@ -203,14 +236,14 @@ class EssayCLI:
 
             # Demonstrate inline citations
             if manager.sources:
-                console.print(f"\n[bold]Inline Citation Examples ({style.upper()}):[/bold]")
+                console.print(f"\n[bold]Inline Citation Examples ({inline_style.upper()}):[/bold]")
                 for source in manager.sources:
-                    citation = manager.format_citation(source['id'], style=style)
+                    citation = manager.format_citation(source['id'], style=inline_style)
                     title = source.get('title', 'Unknown Title')
                     console.print(f"• {title}: [cyan]{citation}[/cyan]")
         
         # Save annotated output if we made changes
-        if (annotate_missing and claims) or bibliography_block:
+        if ((annotate_missing or auto_insert) and claims) or bibliography_block:
             output_path = Path(output_file) if output_file else input_path.with_name(f"{input_path.stem}_cited{input_path.suffix}")
             output_text = annotated_text + bibliography_block
             output_path.write_text(output_text)

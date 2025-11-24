@@ -29,7 +29,7 @@ uv run python -m src.essay cite test_essay.txt --generate-bibliography --style a
 ```
 **Expected Output**:
 - Analysis of claims (if AI model available).
-- `[citation needed]` markers inserted for detected claims in a new `_cited` file.
+- Inline citations inserted when sources are present; otherwise `[citation needed]` markers are added in a new `_cited` file.
 - A formatted bibliography in APA style if sources were added/mocked; otherwise a warning that no sources are available.
 
 ## 4. Cleanup
