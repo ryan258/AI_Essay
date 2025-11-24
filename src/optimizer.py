@@ -118,6 +118,12 @@ class GrammarOptimizer:
         Returns:
             OptimizationResult with issues and metrics.
         """
+        if not text or not text.strip():
+            return OptimizationResult(
+                issues=[],
+                metrics=self._approximate_readability("")
+            )
+
         issues: List[OptimizationIssue] = []
 
         # Calculate readability metrics
@@ -236,7 +242,13 @@ class GrammarOptimizer:
         )
 
     def _count_syllables(self, word: str) -> int:
-        """Approximate syllable count for a word."""
+        """
+        Approximate syllable count for a word.
+        
+        Note: This is a heuristic method and may not be 100% accurate for all words,
+        especially those with complex vowel patterns or silent letters (e.g., "coffee").
+        It is used as a fallback when textstat is not available.
+        """
         word = word.lower().strip(".,!?;:")
         vowels = "aeiou"
         syllable_count = 0
@@ -300,7 +312,12 @@ class GrammarOptimizer:
         return (passive_count / len(sentences)) * 100
 
     def _is_passive_voice(self, sentence: str) -> bool:
-        """Detect if a sentence uses passive voice."""
+        """
+        Detect if a sentence uses passive voice.
+        
+        Note: This uses a simple heuristic (to be + past participle) and may miss
+        complex passive constructions or irregular verbs.
+        """
         sentence_lower = sentence.lower()
 
         # Look for "to be" verb + past participle patterns
@@ -430,15 +447,17 @@ class GrammarOptimizer:
                 if current_issue:
                     # Create issue from accumulated data
                     issue_type = current_issue.get("type", "grammar")
-                    issues.append(
-                        OptimizationIssue(
-                            type=issue_type,
-                            severity="warning",
-                            message=current_issue.get("description", "Grammar issue"),
-                            original_text=current_issue.get("original", ""),
-                            suggested_text=current_issue.get("suggestion", None),
+                    # Validate required fields
+                    if "description" in current_issue:
+                        issues.append(
+                            OptimizationIssue(
+                                type=issue_type,
+                                severity="warning",
+                                message=current_issue.get("description", "Grammar issue"),
+                                original_text=current_issue.get("original", ""),
+                                suggested_text=current_issue.get("suggestion", None),
+                            )
                         )
-                    )
                     current_issue = {}
                 continue
 
@@ -453,7 +472,7 @@ class GrammarOptimizer:
                 current_issue["suggestion"] = line.split(":", 1)[1].strip()
 
         # Add last issue if exists
-        if current_issue:
+        if current_issue and "description" in current_issue:
             issues.append(
                 OptimizationIssue(
                     type=current_issue.get("type", "grammar"),

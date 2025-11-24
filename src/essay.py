@@ -7,6 +7,9 @@ from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from .citations import CitationManager
 from .research import ResearchAssistant
@@ -15,6 +18,7 @@ from .analyzer import EssayAnalyzer
 from .improver import EssayImprover
 from .outline import OutlineGenerator, OutlineTemplate, ExportFormat
 from .optimizer import GrammarOptimizer
+from .argument import ArgumentAnalyzer
 from .models.openrouter import OpenRouterModel
 import asyncio
 
@@ -22,6 +26,21 @@ console = Console()
 
 class EssayCLI:
     """CLI for the Essay Maker Platform."""
+
+    def _init_model(self, model_name: str = None, fallback: str = "anthropic/claude-3-haiku") -> OpenRouterModel:
+        """Initialize AI model with fallback."""
+        if model_name:
+            try:
+                console.print(f"[dim]Using {model_name}...[/dim]")
+                return OpenRouterModel(model_name=model_name)
+            except Exception as e:
+                console.print(f"[yellow]Warning: Could not initialize {model_name} ({e}). Falling back to {fallback}.[/yellow]")
+        
+        try:
+            return OpenRouterModel(model_name=fallback)
+        except Exception as e:
+            console.print(f"[red]Error initializing fallback model {fallback}: {e}[/red]")
+            return None
 
     def research(self, input_file: str, min_sources: int = 3, auto_cite: bool = False, model: str = "anthropic/claude-3-haiku"):
         """
@@ -41,11 +60,11 @@ class EssayCLI:
         text = input_path.read_text()
 
         # Initialize model and assistant
-        try:
-            ai_model = OpenRouterModel(model_name=model)
+        ai_model = self._init_model(model)
+        if ai_model:
             assistant = ResearchAssistant(model=ai_model)
-        except Exception as e:
-            console.print(f"[yellow]Warning: Could not initialize AI model ({e}). Research capabilities limited.[/yellow]")
+        else:
+            console.print("[yellow]Warning: Research capabilities limited (no AI model).[/yellow]")
             assistant = ResearchAssistant()
 
         console.print(Panel(f"Researching topics for {input_file}...", title="Research Assistant"))
@@ -86,11 +105,11 @@ class EssayCLI:
         text = input_path.read_text()
         
         # Initialize manager
-        try:
-            ai_model = OpenRouterModel(model_name=model)
+        ai_model = self._init_model(model)
+        if ai_model:
             manager = CitationManager(model=ai_model)
-        except Exception as e:
-            console.print(f"[yellow]Warning: Could not initialize AI model ({e}). Auto-claim detection disabled.[/yellow]")
+        else:
+            console.print("[yellow]Warning: Auto-claim detection disabled (no AI model).[/yellow]")
             manager = CitationManager()
 
         console.print(Panel(f"Analyzing {input_file} for citations...", title="Citation Generator"))
@@ -139,12 +158,11 @@ class EssayCLI:
 
         text = input_path.read_text()
 
-        try:
-            ai_model = OpenRouterModel(model_name=model)
-            manager = CitationManager(model=ai_model)
-        except Exception as e:
-            console.print(f"[red]Error initializing AI model: {e}[/red]")
+        ai_model = self._init_model(model)
+        if not ai_model:
             return
+
+        manager = CitationManager(model=ai_model)
 
         console.print(Panel(f"Scanning {input_file} for plagiarism...", title="Plagiarism Checker"))
         
@@ -307,14 +325,7 @@ class EssayCLI:
         essay_text = input_path.read_text()
 
         # Initialize analyzer
-        ai_model = None
-        if model:
-            try:
-                ai_model = OpenRouterModel(model_name=model)
-                console.print(f"[dim]Using {model} for advanced analysis[/dim]")
-            except Exception as e:
-                console.print(f"[yellow]Warning: Could not initialize AI model ({e}). Using basic analysis.[/yellow]")
-
+        ai_model = self._init_model(model)
         analyzer = EssayAnalyzer(model=ai_model)
 
         console.print(Panel(f"Analyzing structure of {input_file}...", title="Essay Analyzer"))
@@ -352,14 +363,7 @@ class EssayCLI:
 
         essay_text = input_path.read_text()
 
-        ai_model = None
-        if model:
-            try:
-                ai_model = OpenRouterModel(model_name=model)
-                console.print(f"[dim]Using {model} for improvements[/dim]")
-            except Exception as e:
-                console.print(f"[yellow]Warning: Could not initialize AI model ({e}). Falling back to heuristics.[/yellow]")
-
+        ai_model = self._init_model(model)
         improver = EssayImprover(model=ai_model)
 
         console.print(Panel(f"Improving {input_file} for clarity, grammar, and argument strength...", title="Essay Improver"))
@@ -461,14 +465,7 @@ class EssayCLI:
             return
 
         # Initialize AI model if requested
-        ai_model = None
-        if model:
-            try:
-                ai_model = OpenRouterModel(model_name=model)
-                console.print(f"[dim]Using {model} for intelligent outline generation[/dim]")
-            except Exception as e:
-                console.print(f"[yellow]Warning: Could not initialize AI model ({e}). Using template-based generation.[/yellow]")
-
+        ai_model = self._init_model(model) if model else None
         generator = OutlineGenerator(model=ai_model)
 
         console.print(Panel(f"Generating {template} outline...", title="Outline Generator"))
@@ -542,14 +539,7 @@ class EssayCLI:
         text = input_path.read_text()
 
         # Initialize AI model if requested
-        ai_model = None
-        if model:
-            try:
-                ai_model = OpenRouterModel(model_name=model)
-                console.print(f"[dim]Using {model} for advanced grammar checking[/dim]")
-            except Exception as e:
-                console.print(f"[yellow]Warning: Could not initialize AI model ({e}). Using heuristic analysis only.[/yellow]")
-
+        ai_model = self._init_model(model) if model else None
         optimizer = GrammarOptimizer(model=ai_model)
 
         console.print(Panel(f"Analyzing {input_file} for grammar, clarity, and style...", title="Grammar Optimizer"))
@@ -627,6 +617,85 @@ class EssayCLI:
             console.print(f"[dim]Saved to {output_path}[/dim]")
         elif apply_fixes and result.improvements_applied == 0:
             console.print("\n[yellow]No automatic fixes available (manual review needed)[/yellow]")
+
+    def analyze_argument(self, input_file: str, model: str = None):
+        """
+        Analyze the argument strength and structure of an essay.
+
+        Args:
+            input_file: Path to the essay file.
+            model: Optional AI model to use.
+        """
+        input_path = Path(input_file)
+        if not input_path.exists():
+            console.print(f"[red]Error: File {input_file} not found.[/red]")
+            return
+
+        text = input_path.read_text()
+
+        # Initialize AI model
+        ai_model = self._init_model(model)
+        
+        # Fallback to default model if none specified but required for this feature
+        if not ai_model:
+             console.print("[red]Error: Argument analysis requires a working AI model configuration.[/red]")
+             return
+
+        analyzer = ArgumentAnalyzer(model=ai_model)
+
+        console.print(Panel(f"Analyzing arguments in {input_file}...", title="Argument Analyzer"))
+
+        analysis = analyzer.analyze(text)
+
+        # Display Thesis
+        console.print("\n[bold]Thesis Statement:[/bold]")
+        if analysis.thesis:
+            console.print(f"[italic]{analysis.thesis}[/italic]")
+        else:
+            console.print("[yellow]No clear thesis statement detected.[/yellow]")
+
+        # Display Claims
+        console.print("\n[bold]Supporting Claims:[/bold]")
+        if analysis.claims:
+            for i, claim in enumerate(analysis.claims, 1):
+                strength_color = {
+                    "strong": "green",
+                    "moderate": "yellow",
+                    "weak": "red"
+                }.get(claim.strength.lower(), "white")
+                
+                console.print(f"{i}. [bold]{claim.text}[/bold]")
+                console.print(f"   Type: {claim.type}")
+                console.print(f"   Strength: [{strength_color}]{claim.strength.upper()}[/{strength_color}]")
+                if claim.evidence and claim.evidence.lower() != "none":
+                    console.print(f"   Evidence: {claim.evidence}")
+                if claim.explanation:
+                    console.print(f"   Analysis: [dim]{claim.explanation}[/dim]")
+                console.print()
+        else:
+            console.print("[dim]No distinct supporting claims found.[/dim]")
+
+        # Display Fallacies
+        if analysis.fallacies:
+            console.print("\n[bold red]Detected Logical Fallacies:[/bold red]")
+            for fallacy in analysis.fallacies:
+                console.print(f"• [bold]{fallacy.name}[/bold]: {fallacy.text}")
+                console.print(f"  [dim]{fallacy.explanation}[/dim]")
+        else:
+            console.print("\n[green]No logical fallacies detected.[/green]")
+
+        # Display Overall Score & Critique
+        console.print("\n[bold]Overall Evaluation:[/bold]")
+        score_color = "green" if analysis.overall_strength >= 8 else "yellow" if analysis.overall_strength >= 5 else "red"
+        console.print(f"Strength Score: [{score_color}]{analysis.overall_strength}/10[/{score_color}]")
+        console.print(f"\n[italic]{analysis.critique}[/italic]")
+
+        # Display Suggestions
+        if analysis.suggestions:
+            console.print("\n[bold]Suggestions for Improvement:[/bold]")
+            for i, suggestion in enumerate(analysis.suggestions, 1):
+                console.print(f"{i}. {suggestion}")
+
 
 def main():
     fire.Fire(EssayCLI)
