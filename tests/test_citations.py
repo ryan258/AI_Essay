@@ -39,12 +39,28 @@ def test_generate_bibliography_valid(manager):
         # We also need to mock CitationStylesStyle and Bibliography since we don't have real CSL files in test env usually
         with patch("src.citations.CitationStylesStyle") as mock_style, \
              patch("src.citations.CitationStylesBibliography") as mock_bib:
-            
+
             mock_bib_instance = Mock()
             mock_bib_instance.bibliography.return_value = ["Reference 1"]
             mock_bib.return_value = mock_bib_instance
-            
+
             manager.add_source({"id": "1", "title": "Test", "type": "article-journal"})
             result = manager.generate_bibliography(style="apa")
-            
+
             assert "Reference 1" in result
+
+
+def test_best_source_for_claim_keyword_match(manager):
+    manager.add_source({"id": "1", "title": "Machine Learning Study", "abstract": "AI research and models."})
+    manager.add_source({"id": "2", "title": "Biology Overview", "abstract": "Cells and DNA."})
+
+    claim = "Machine learning algorithms improve accuracy"
+    source = manager._best_source_for_claim(claim)
+    assert source["id"] == "1"
+
+
+def test_best_source_for_claim_no_match_returns_first(manager):
+    manager.add_source({"id": "1", "title": "Quantum Physics", "abstract": ""})
+    claim = "Economics theory suggests"
+    source = manager._best_source_for_claim(claim)
+    assert source["id"] == "1"

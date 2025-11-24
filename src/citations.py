@@ -4,6 +4,7 @@ import json
 import logging
 from pathlib import Path
 from typing import List, Dict, Optional, Any
+import string
 from habanero import Crossref
 from citeproc import CitationStylesStyle, CitationStylesBibliography
 from citeproc import Citation, CitationItem
@@ -249,8 +250,53 @@ class CitationManager:
             return []
 
         suggestions: List[InlineSuggestion] = []
-        for idx, claim in enumerate(claims):
-            source = self.sources[idx % len(self.sources)]
+        for claim in claims:
+            source = self._best_source_for_claim(claim)
+            if not source:
+                continue
             citation = self.format_citation(source["id"], style=style)
             suggestions.append({"claim": claim, "citation": citation})
         return suggestions
+
+    def _best_source_for_claim(self, claim: str) -> Optional[Dict[str, Any]]:
+        """Pick the source with the most keyword overlap with the claim."""
+        if not self.sources:
+            return None
+
+        stopwords = {
+            "the", "and", "for", "are", "was", "but", "not", "you", "all", "can",
+            "her", "has", "had", "with", "from", "that", "this", "they", "them",
+            "their", "its", "into", "onto", "about", "over", "under", "an", "is",
+            "be", "been", "being", "have", "has", "had", "do", "does", "did", "he",
+            "she", "it", "we", "us", "him", "his", "in", "on", "at", "by", "to",
+            "of", "or", "if", "when", "where", "while", "may", "will", "would",
+            "could", "should"
+        }
+        technical_terms = {"ai", "ml", "dl", "nlp", "cv", "rl", "go", "c++", "api", "sql"}
+        keywords = {
+            w.lower().strip(string.punctuation)
+            for w in claim.split()
+            if w and (
+                w.lower().strip(string.punctuation) in technical_terms
+                or (w.lower() not in stopwords and len(w.strip(string.punctuation)) >= 2)
+            )
+        }
+        best = None
+        best_score = -1
+
+        for source in self.sources:
+            haystack = " ".join([
+                source.get("title", ""),
+                source.get("abstract", ""),
+                source.get("url", "")
+            ]).lower()
+            score = sum(1 for kw in keywords if kw and kw in haystack)
+            if score > best_score:
+                best_score = score
+                best = source
+
+        MIN_MATCH_SCORE = 1
+        if best_score >= MIN_MATCH_SCORE:
+            return best
+        # Fallback: return first source so every claim can be cited even if relevance is low
+        return self.sources[0] if self.sources else None

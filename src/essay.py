@@ -4,6 +4,7 @@ Essay Maker Platform CLI.
 
 import fire
 from pathlib import Path
+import json
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -104,6 +105,36 @@ class EssayCLI:
 
         console.print(f"[green]Found {len(suggestions)} relevant sources:[/green]\n")
         
+        def _to_csl(paper: dict, idx: int) -> dict:
+            """Convert Semantic Scholar paper dict to a CSL-like structure."""
+            authors = paper.get("authors") or []
+            formatted_authors = []
+            for name in authors:
+                if isinstance(name, dict) and name.get("family"):
+                    formatted_authors.append(name)
+                    continue
+                parts = name.strip().split() if isinstance(name, str) else []
+                if len(parts) >= 2:
+                    formatted_authors.append({"family": parts[-1], "given": " ".join(parts[:-1])})
+                elif parts:
+                    formatted_authors.append({"literal": parts[0]})
+            year = paper.get("year") or 0
+            csl = {
+                "id": paper.get("paperId") or paper.get("id") or f"source-{idx}",
+                "type": paper.get("publicationVenue", {}).get("type", "article-journal"),
+                "title": paper.get("title", "Untitled"),
+                "author": formatted_authors,
+                "issued": {"date-parts": [[year]]} if year else {},
+                "container-title": paper.get("publicationVenue", {}).get("name", "Semantic Scholar"),
+                "URL": paper.get("url", ""),
+                "abstract": paper.get("abstract", ""),
+            }
+            doi = paper.get("externalIds", {}).get("DOI") if isinstance(paper.get("externalIds"), dict) else None
+            if doi:
+                csl["DOI"] = doi
+            return csl
+
+        csl_sources = []
         for i, paper in enumerate(suggestions, 1):
             console.print(f"[bold]{i}. {paper['title']}[/bold]")
             console.print(f"   Authors: {', '.join(paper['authors'][:3])}")
@@ -111,6 +142,15 @@ class EssayCLI:
             console.print(f"   Citations: {paper['citationCount']}")
             console.print(f"   URL: {paper['url']}")
             console.print()
+            csl_sources.append(_to_csl(paper, i))
+
+        # Persist sources for downstream citation steps
+        try:
+            sources_path = input_path.with_name(f"{input_path.stem}_sources.json")
+            sources_path.write_text(json.dumps(csl_sources, indent=2))
+            console.print(f"[dim]Saved sources to {sources_path}[/dim]")
+        except Exception as e:
+            console.print(f"[yellow]Warning: Could not save sources file ({e})[/yellow]")
 
         # Perform gap analysis if requested
         if gap_analysis:
@@ -155,6 +195,8 @@ class EssayCLI:
         text = input_path.read_text()
         annotated_text = text
         inline_style = switch_to or style
+        # Track whether sources were loaded successfully (for potential future logging)
+        loaded_sources = False
         
         # Initialize manager
         ai_model = self._init_model(model)
@@ -163,6 +205,27 @@ class EssayCLI:
         else:
             console.print("[yellow]Warning: Auto-claim detection disabled (no AI model).[/yellow]")
             manager = CitationManager()
+
+        # Load any saved sources from previous research step
+        sources_path = input_path.with_name(f"{input_path.stem}_sources.json")
+        if sources_path.exists():
+            try:
+                raw = sources_path.read_text()
+                saved_sources = json.loads(raw)
+                if not isinstance(saved_sources, list):
+                    raise ValueError("Sources file must contain a list")
+                valid_sources = []
+                for src in saved_sources:
+                    if isinstance(src, dict) and src.get("id"):
+                        valid_sources.append(src)
+                if valid_sources:
+                    manager.sources.extend(valid_sources)
+                    loaded_sources = True
+                    console.print(f"[dim]Loaded {len(valid_sources)} source(s) from {sources_path}[/dim]")
+            except json.JSONDecodeError as e:
+                console.print(f"[yellow]Warning: Corrupt sources file ({e})[/yellow]")
+            except Exception as e:
+                console.print(f"[yellow]Warning: Could not load saved sources ({e})[/yellow]")
 
         console.print(Panel(f"Analyzing {input_file} for citations...", title="Citation Generator"))
 
@@ -181,7 +244,13 @@ class EssayCLI:
                 for s in suggestions:
                     claim = s["claim"]
                     citation = s["citation"]
-                    if claim in annotated_text:
+                    claim_with_marker = f"{claim} [citation needed]"
+                    if claim_with_marker in annotated_text:
+                        annotated_text = annotated_text.replace(
+                            claim_with_marker, f"{claim} {citation}", 1
+                        )
+                        inserted += 1
+                    elif claim in annotated_text:
                         annotated_text = annotated_text.replace(
                             claim, f"{claim} {citation}", 1
                         )
@@ -190,6 +259,19 @@ class EssayCLI:
                     console.print(f"[green]Inserted {inserted} inline citation(s) using {inline_style.upper()}.[/green]")
                 else:
                     console.print("[yellow]Could not place inline citations (claims not found verbatim in text).[/yellow]")
+                # Replace any remaining markers with leftover citations in order
+                remaining_markers = annotated_text.count("[citation needed]")
+                if remaining_markers and manager.sources:
+                    for i in range(remaining_markers):
+                        source = manager.sources[i % len(manager.sources)]
+                        # Defensive check (should exist if manager.sources is non-empty)
+                        if not source:
+                            continue
+                        src_id = source.get("id")
+                        if not src_id:
+                            continue
+                        citation = manager.format_citation(src_id, style=inline_style)
+                        annotated_text = annotated_text.replace("[citation needed]", citation, 1)
             elif auto_insert and not manager.sources:
                 console.print("[yellow]No sources available to insert inline citations; falling back to markers.[/yellow]")
                 if annotate_missing:
