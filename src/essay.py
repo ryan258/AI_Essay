@@ -13,6 +13,7 @@ from .research import ResearchAssistant
 from .drafter import EssayDrafter
 from .analyzer import EssayAnalyzer
 from .improver import EssayImprover
+from .outline import OutlineGenerator, OutlineTemplate, ExportFormat
 from .models.openrouter import OpenRouterModel
 import asyncio
 
@@ -416,6 +417,101 @@ class EssayCLI:
         status_color = "green" if result.reached_target else "yellow"
         console.print(f"\n[{status_color}]Final overall score: {result.final_scores.overall:.1f} / 100 (target {target_score})[/{status_color}]")
         console.print(f"[dim]Saved to {final_file}[/dim]\n")
+
+    def outline(
+        self,
+        topic: str = None,
+        notes_file: str = None,
+        template: str = "5-paragraph",
+        word_count: int = 1000,
+        model: str = None,
+        format: str = "markdown",
+        output_file: str = None,
+    ):
+        """
+        Generate a structured essay outline.
+
+        Args:
+            topic: Essay topic (required if notes_file not provided).
+            notes_file: Path to rough notes file (alternative to topic).
+            template: Outline template (5-paragraph, analytical, comparative, argumentative).
+            word_count: Target word count for the essay.
+            model: Optional AI model for intelligent outline generation.
+            format: Export format (markdown, json, plain).
+            output_file: Optional file to save the outline.
+        """
+        # Validate inputs
+        if not topic and not notes_file:
+            console.print("[red]Error: Either --topic or --notes-file must be provided.[/red]")
+            return
+
+        # Parse template
+        try:
+            template_enum = OutlineTemplate(template)
+        except ValueError:
+            console.print(f"[red]Error: Unknown template '{template}'. Valid options: 5-paragraph, analytical, comparative, argumentative[/red]")
+            return
+
+        # Parse format
+        try:
+            format_enum = ExportFormat(format)
+        except ValueError:
+            console.print(f"[red]Error: Unknown format '{format}'. Valid options: markdown, json, plain[/red]")
+            return
+
+        # Initialize AI model if requested
+        ai_model = None
+        if model:
+            try:
+                ai_model = OpenRouterModel(model_name=model)
+                console.print(f"[dim]Using {model} for intelligent outline generation[/dim]")
+            except Exception as e:
+                console.print(f"[yellow]Warning: Could not initialize AI model ({e}). Using template-based generation.[/yellow]")
+
+        generator = OutlineGenerator(model=ai_model)
+
+        console.print(Panel(f"Generating {template} outline...", title="Outline Generator"))
+
+        # Generate outline
+        if notes_file:
+            # Convert notes to outline
+            notes_path = Path(notes_file)
+            if not notes_path.exists():
+                console.print(f"[red]Error: Notes file {notes_file} not found.[/red]")
+                return
+
+            notes = notes_path.read_text()
+            outline = generator.convert_notes_to_outline(
+                notes=notes,
+                template=template_enum,
+                word_count=word_count,
+            )
+        else:
+            # Generate from topic
+            outline = generator.generate(
+                topic=topic,
+                template=template_enum,
+                word_count=word_count,
+            )
+
+        # Export outline
+        output = generator.export(outline, format_enum)
+
+        # Save or print
+        if output_file:
+            output_path = Path(output_file)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(output)
+            console.print(f"[green]Outline saved to {output_file}[/green]")
+        else:
+            console.print("\n" + output)
+
+        # Show summary
+        console.print(f"\n[bold]Outline Summary:[/bold]")
+        console.print(f"  Topic: {outline.topic}")
+        console.print(f"  Template: {outline.template_type}")
+        console.print(f"  Sections: {len(outline.sections)}")
+        console.print(f"  Total word count: {outline.total_word_count}")
 
 def main():
     fire.Fire(EssayCLI)

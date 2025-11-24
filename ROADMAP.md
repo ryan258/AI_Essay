@@ -5,7 +5,7 @@ This roadmap charts the evolution from AI response testing tool (v2.0) to compre
 **📍 CURRENT STATUS (November 2024):**
 - ✅ v2.0: Complete - Research tool foundation with OpenRouter integration
 - ✅ **Phase 1: COMPLETE** - Core essay creation (drafting, analysis, improvement)
-- ⏭️  Phase 2.1: IN PROGRESS - Smart outline generator
+- ✅ **Phase 2.1: COMPLETE** - Smart outline generator
 - ⏭️  Phase 2.2-2.3: NOT STARTED - Advanced polish features
 - ✅ Phase 3: 90% COMPLETE - Research & citation capabilities (technical debt fixed)
 - ⏸️  Phase 4-5: PENDING - Templates, UX, and community features
@@ -14,9 +14,11 @@ This roadmap charts the evolution from AI response testing tool (v2.0) to compre
 - ✅ Implemented Phase 1.1: Multi-model essay drafting with async parallelization
 - ✅ Implemented Phase 1.2: Comprehensive structure analyzer with scoring
 - ✅ Implemented Phase 1.3: Basic improvement engine with multi-dimensional scoring
+- ✅ Implemented Phase 2.1: Smart outline generator with 4 templates and 3 export formats
 - ✅ Fixed technical debt: Test infrastructure, dependencies, API timeouts
-- ✅ All 40 tests passing
+- ✅ All 62 tests passing
 - 🎉 **PHASE 1 COMPLETE** - Full essay creation workflow ready!
+- 🎉 **PHASE 2.1 COMPLETE** - Smart outlines from topics or notes!
 
 **Note**: Phase 3 was built ahead of Phases 1-2 as a proof-of-concept for research capabilities.
 The roadmap phases below represent the original planning sequence, not implementation order.
@@ -181,14 +183,14 @@ uv run python -m src.essay improve drafts/20241123_*/anthropic_claude-3-haiku.tx
 
 **Goal**: Add sophisticated analysis and professional-quality output
 
-### 2.1: Smart Outline Generator (Weeks 7-8)
+### 2.1: Smart Outline Generator (Weeks 7-8) ✅ COMPLETE
 
 **Features**:
-- [ ] Generate detailed outlines from topic/prompt
-- [ ] Multiple outline templates (5-paragraph, analytical, comparative, argumentative)
-- [ ] Suggest word count distribution across sections
-- [ ] Convert rough notes → structured outline
-- [ ] Export outlines in multiple formats (markdown, JSON, plain text)
+- [x] Generate detailed outlines from topic/prompt
+- [x] Multiple outline templates (5-paragraph, analytical, comparative, argumentative)
+- [x] Suggest word count distribution across sections
+- [x] Convert rough notes → structured outline
+- [x] Export outlines in multiple formats (markdown, JSON, plain text)
 
 **Technical**:
 - New `OutlineGenerator` class
