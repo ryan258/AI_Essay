@@ -2,6 +2,7 @@
 Interactive Essay Wizard.
 """
 import asyncio
+import os
 from rich.console import Console
 from rich.prompt import Prompt, Confirm, IntPrompt
 from rich.panel import Panel
@@ -20,7 +21,7 @@ class EssayWizard:
 
     def __init__(self):
         # Initialize with a default model for research/drafting
-        self.model_name = "anthropic/claude-3-haiku"
+        self.model_name = os.getenv("OPENROUTER_MODEL", "anthropic/claude-3-haiku")
         self.template_manager = TemplateManager()
 
     def run(self):

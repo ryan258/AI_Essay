@@ -41,6 +41,18 @@ cp .env.example .env
 Edit `.env` and add your OpenRouter API key:
 ```
 OPENROUTER_API_KEY=your_key_here
+# Optional: default model for all commands (can be overridden with --model)
+# OPENROUTER_MODEL=anthropic/claude-3-haiku
+
+# Optional: per-role defaults (override OPENROUTER_MODEL for specific tasks)
+# MODEL_ANALYZE=anthropic/claude-3-sonnet       # analyze
+# MODEL_ARGUMENT=anthropic/claude-3-opus        # analyze-argument
+# MODEL_OPTIMIZE=openai/gpt-4o                  # optimize
+# MODEL_RESEARCH=google/gemini-flash-1.5        # research
+# MODEL_CITE=anthropic/claude-3-haiku           # cite
+# MODEL_FACTCHECK=anthropic/claude-3-haiku      # check_plagiarism / fact checks
+# MODEL_SUMMARIZE=anthropic/claude-3-haiku      # summarize
+# MODEL_OUTLINE=google/gemini-flash-1.5         # outline
 ```
 
 Get an API key from https://openrouter.ai/keys

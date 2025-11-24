@@ -392,7 +392,8 @@ uv run python -m src.essay analyze-argument my_essay.txt
 
 **Features**:
 - [x] Detect claims that need citations
-- [~] Insert inline citation markers (adds `[citation needed]`; user maps sources)
+- [x] Insert inline citations when sources exist (strict by default; optional lenient fallback to force a citation)
+- [x] Persist research sources to `*_sources.json` and auto-load in `cite`
 - [x] Auto-generate bibliography (when sources are present)
 - [x] Plagiarism prevention (detect uncited quotes)
 - [ ] Citation format switching (convert MLA → APA)
@@ -471,7 +472,7 @@ uv run essay.py research my_essay.txt \
 - ✅ Automatic source finding
 - ✅ Proper citation management (APA, MLA, IEEE, Chicago)
 - ✅ Evidence-based arguments with Gap Analysis
-- ⚠️ Inline citation placement + style switching still pending
+- ⚠️ Inline citation placement now available when sources exist (strict by default, lenient optional); style switching still pending
 
 **Academic Workflow**:
 ```bash

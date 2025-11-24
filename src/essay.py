@@ -5,6 +5,7 @@ Essay Maker Platform CLI.
 import fire
 from pathlib import Path
 import json
+import os
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -32,14 +33,25 @@ console = Console()
 class EssayCLI:
     """CLI for the Essay Maker Platform."""
 
-    def _init_model(self, model_name: str = None, fallback: str = "anthropic/claude-3-haiku") -> OpenRouterModel:
-        """Initialize AI model with fallback."""
-        if model_name:
+    def _init_model(self, model_name: str = None, role_env: str = None, fallback: str = "anthropic/claude-3-haiku") -> OpenRouterModel:
+        """
+        Initialize AI model with env-aware fallback.
+
+        Args:
+            model_name: Explicit model passed via CLI flag
+            role_env: Role-specific env var to check (e.g., MODEL_DRAFT)
+            fallback: Hardcoded default if nothing else is set
+        """
+        role_model = os.getenv(role_env) if role_env else None
+        env_model = os.getenv("OPENROUTER_MODEL")
+        target_model = model_name or role_model or env_model or fallback
+
+        if target_model:
             try:
-                console.print(f"[dim]Using {model_name}...[/dim]")
-                return OpenRouterModel(model_name=model_name)
+                console.print(f"[dim]Using {target_model}...[/dim]")
+                return OpenRouterModel(model_name=target_model)
             except Exception as e:
-                console.print(f"[yellow]Warning: Could not initialize {model_name} ({e}). Falling back to {fallback}.[/yellow]")
+                console.print(f"[yellow]Warning: Could not initialize {target_model} ({e}).[/yellow]")
         
         try:
             return OpenRouterModel(model_name=fallback)
@@ -86,7 +98,7 @@ class EssayCLI:
         text = input_path.read_text()
 
         # Initialize model and assistant
-        ai_model = self._init_model(model)
+        ai_model = self._init_model(model, role_env="MODEL_RESEARCH")
         if ai_model:
             assistant = ResearchAssistant(model=ai_model)
         else:
@@ -198,7 +210,7 @@ class EssayCLI:
         annotated_text = text
         inline_style = switch_to or style
         # Initialize manager
-        ai_model = self._init_model(model)
+        ai_model = self._init_model(model, role_env="MODEL_CITE")
         if ai_model:
             manager = CitationManager(model=ai_model)
         else:
@@ -351,7 +363,7 @@ class EssayCLI:
 
         text = input_path.read_text()
 
-        ai_model = self._init_model(model)
+        ai_model = self._init_model(model, role_env="MODEL_SUMMARIZE")
         if not ai_model:
             return
 
@@ -516,7 +528,7 @@ class EssayCLI:
         essay_text = input_path.read_text()
 
         # Initialize analyzer
-        ai_model = self._init_model(model)
+        ai_model = self._init_model(model, role_env="MODEL_FACTCHECK")
         analyzer = EssayAnalyzer(model=ai_model)
 
         console.print(Panel(f"Analyzing structure of {input_file}...", title="Essay Analyzer"))
@@ -554,7 +566,7 @@ class EssayCLI:
 
         essay_text = input_path.read_text()
 
-        ai_model = self._init_model(model)
+        ai_model = self._init_model(model, role_env="MODEL_ANALYZE")
         improver = EssayImprover(model=ai_model)
 
         console.print(Panel(f"Improving {input_file} for clarity, grammar, and argument strength...", title="Essay Improver"))
@@ -656,7 +668,7 @@ class EssayCLI:
             return
 
         # Initialize AI model if requested
-        ai_model = self._init_model(model) if model else None
+        ai_model = self._init_model(model, role_env="MODEL_OUTLINE") if model else None
         generator = OutlineGenerator(model=ai_model)
 
         console.print(Panel(f"Generating {template} outline...", title="Outline Generator"))
@@ -730,7 +742,7 @@ class EssayCLI:
         text = input_path.read_text()
 
         # Initialize AI model if requested
-        ai_model = self._init_model(model) if model else None
+        ai_model = self._init_model(model, role_env="MODEL_OPTIMIZE") if model else None
         optimizer = GrammarOptimizer(model=ai_model)
 
         console.print(Panel(f"Analyzing {input_file} for grammar, clarity, and style...", title="Grammar Optimizer"))
@@ -825,7 +837,7 @@ class EssayCLI:
         text = input_path.read_text()
 
         # Initialize AI model
-        ai_model = self._init_model(model)
+        ai_model = self._init_model(model, role_env="MODEL_ARGUMENT")
         
         # Fallback to default model if none specified but required for this feature
         if not ai_model:
