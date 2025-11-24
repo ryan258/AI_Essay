@@ -14,6 +14,7 @@ from .drafter import EssayDrafter
 from .analyzer import EssayAnalyzer
 from .improver import EssayImprover
 from .outline import OutlineGenerator, OutlineTemplate, ExportFormat
+from .optimizer import GrammarOptimizer
 from .models.openrouter import OpenRouterModel
 import asyncio
 
@@ -512,6 +513,120 @@ class EssayCLI:
         console.print(f"  Template: {outline.template_type}")
         console.print(f"  Sections: {len(outline.sections)}")
         console.print(f"  Total word count: {outline.total_word_count}")
+
+    def optimize(
+        self,
+        input_file: str,
+        target_grade_level: float = None,
+        prefer_active_voice: bool = True,
+        apply_fixes: bool = False,
+        model: str = None,
+        output_file: str = None,
+    ):
+        """
+        Optimize essay for grammar, clarity, and style.
+
+        Args:
+            input_file: Path to the essay file.
+            target_grade_level: Target Flesch-Kincaid grade level.
+            prefer_active_voice: Flag passive voice usage.
+            apply_fixes: Whether to apply automatic fixes.
+            model: Optional AI model for advanced grammar checking.
+            output_file: Optional file to save optimized essay.
+        """
+        input_path = Path(input_file)
+        if not input_path.exists():
+            console.print(f"[red]Error: File {input_file} not found.[/red]")
+            return
+
+        text = input_path.read_text()
+
+        # Initialize AI model if requested
+        ai_model = None
+        if model:
+            try:
+                ai_model = OpenRouterModel(model_name=model)
+                console.print(f"[dim]Using {model} for advanced grammar checking[/dim]")
+            except Exception as e:
+                console.print(f"[yellow]Warning: Could not initialize AI model ({e}). Using heuristic analysis only.[/yellow]")
+
+        optimizer = GrammarOptimizer(model=ai_model)
+
+        console.print(Panel(f"Analyzing {input_file} for grammar, clarity, and style...", title="Grammar Optimizer"))
+
+        # Run optimization
+        result = optimizer.optimize(
+            text=text,
+            target_grade_level=target_grade_level,
+            prefer_active_voice=prefer_active_voice,
+            apply_fixes=apply_fixes,
+        )
+
+        # Display readability metrics
+        console.print("\n[bold]Readability Metrics:[/bold]")
+        metrics_table = Table(show_header=False, box=None)
+        metrics_table.add_column("Metric", style="cyan")
+        metrics_table.add_column("Value", style="white")
+
+        metrics = result.metrics
+        metrics_table.add_row("Flesch Reading Ease", f"{metrics.flesch_reading_ease:.1f} / 100")
+        metrics_table.add_row("Grade Level", f"{metrics.flesch_kincaid_grade:.1f}")
+        metrics_table.add_row("Avg Sentence Length", f"{metrics.avg_sentence_length:.1f} words")
+        metrics_table.add_row("Avg Word Length", f"{metrics.avg_word_length:.1f} characters")
+        metrics_table.add_row("Passive Voice", f"{metrics.passive_voice_percentage:.1f}%")
+        metrics_table.add_row("Total Words", str(metrics.total_words))
+        metrics_table.add_row("Total Sentences", str(metrics.total_sentences))
+        metrics_table.add_row("Complex Words (>10 chars)", str(metrics.complex_words))
+
+        console.print(metrics_table)
+
+        # Categorize and display issues
+        if result.issues:
+            console.print(f"\n[bold]Found {len(result.issues)} issues:[/bold]\n")
+
+            # Group by type
+            by_type = {}
+            for issue in result.issues:
+                if issue.type not in by_type:
+                    by_type[issue.type] = []
+                by_type[issue.type].append(issue)
+
+            # Display by severity
+            for issue_type, issues_list in by_type.items():
+                console.print(f"[bold]{issue_type.upper()}:[/bold]")
+                for issue in issues_list[:10]:  # Limit to 10 per category
+                    severity_color = {"error": "red", "warning": "yellow", "suggestion": "blue"}.get(issue.severity, "white")
+                    console.print(f"  [{severity_color}]• {issue.message}[/{severity_color}]")
+                    if issue.original_text:
+                        console.print(f"    [dim]Original: {issue.original_text[:80]}[/dim]")
+                    if issue.suggested_text:
+                        console.print(f"    [green]Suggested: {issue.suggested_text[:80]}[/green]")
+
+                if len(issues_list) > 10:
+                    console.print(f"  [dim]... and {len(issues_list) - 10} more {issue_type} issues[/dim]")
+                console.print()
+        else:
+            console.print("\n[green]No issues found! Essay looks great.[/green]")
+
+        # Display grade level assessment
+        if target_grade_level:
+            if metrics.flesch_kincaid_grade <= target_grade_level:
+                console.print(f"[green]✅ Grade level ({metrics.flesch_kincaid_grade:.1f}) meets target ({target_grade_level})[/green]")
+            else:
+                console.print(f"[yellow]⚠️  Grade level ({metrics.flesch_kincaid_grade:.1f}) exceeds target ({target_grade_level})[/yellow]")
+
+        # Save optimized text if fixes were applied
+        if apply_fixes and result.improvements_applied > 0 and result.optimized_text:
+            if output_file:
+                output_path = Path(output_file)
+            else:
+                output_path = input_path.parent / f"{input_path.stem}_optimized{input_path.suffix}"
+
+            output_path.write_text(result.optimized_text)
+            console.print(f"\n[green]Applied {result.improvements_applied} automatic fixes[/green]")
+            console.print(f"[dim]Saved to {output_path}[/dim]")
+        elif apply_fixes and result.improvements_applied == 0:
+            console.print("\n[yellow]No automatic fixes available (manual review needed)[/yellow]")
 
 def main():
     fire.Fire(EssayCLI)
