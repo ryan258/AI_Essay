@@ -64,3 +64,9 @@ htmlcov/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# Test/temporary export files
+test_export.*
+*_export.html
+*_export.pdf
+*_export.docx

@@ -22,6 +22,7 @@ from .argument import ArgumentAnalyzer
 from .models.openrouter import OpenRouterModel
 from .templates import TemplateManager
 from .wizard import EssayWizard
+from .export import Exporter
 import asyncio
 
 console = Console()
@@ -797,6 +798,31 @@ class EssayCLI:
         """
         wizard = EssayWizard()
         wizard.run()
+
+    def export(self, file: str, format: str = "pdf", output: str = None):
+        """
+        Export an essay to a different format.
+
+        Args:
+            file: Path to the input markdown file.
+            format: Target format (pdf, docx, html).
+            output: Optional output path.
+        """
+        input_path = Path(file)
+        if not input_path.exists():
+            console.print(f"[red]Error: File '{file}' not found.[/red]")
+            return
+
+        if not output:
+            output = str(input_path.with_suffix(f".{format}"))
+
+        exporter = Exporter()
+        console.print(f"[dim]Exporting {file} to {format.upper()}...[/dim]")
+        
+        if exporter.export(input_path.read_text(), format, output):
+            console.print(f"[green]Successfully exported to {output}[/green]")
+        else:
+            console.print(f"[red]Export failed. Check logs for details.[/red]")
 
 
 def main():
