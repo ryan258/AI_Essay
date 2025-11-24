@@ -5,9 +5,10 @@ This roadmap charts the evolution from AI response testing tool (v2.0) to compre
 **📍 CURRENT STATUS (November 2024):**
 - ✅ v2.0: Complete - Research tool foundation with OpenRouter integration
 - ✅ **Phase 1: COMPLETE** - Core essay creation (drafting, analysis, improvement)
-- ✅ **Phase 2.1: COMPLETE** - Smart outline generator
-- ✅ **Phase 2.2: COMPLETE** - Grammar & clarity optimizer
-- ✅ **Phase 2.3: COMPLETE** - Argument analyzer
+- ✅ **Phase 2: COMPLETE** - Intelligence & Polish (outlines, grammar optimization, argument analysis)
+  - ✅ Phase 2.1: Smart outline generator
+  - ✅ Phase 2.2: Grammar & clarity optimizer
+  - ✅ Phase 2.3: Argument analyzer
 - ✅ Phase 3: 90% COMPLETE - Research & citation capabilities (technical debt fixed)
 - ⏸️  Phase 4-5: PENDING - Templates, UX, and community features
 
@@ -19,11 +20,14 @@ This roadmap charts the evolution from AI response testing tool (v2.0) to compre
 - ✅ Implemented Phase 2.2: Grammar & clarity optimizer with readability metrics
 - ✅ Implemented Phase 2.3: Argument analyzer with fallacy detection and strength scoring
 - ✅ Fixed technical debt: Test infrastructure, dependencies, API timeouts
-- ✅ All 86 tests passing
+- ✅ Refactored CLI with DRY principles (eliminated model initialization duplication)
+- ✅ Added comprehensive robustness testing and error handling
+- ✅ All 104 tests passing
 - 🎉 **PHASE 1 COMPLETE** - Full essay creation workflow ready!
-- 🎉 **PHASE 2.1 COMPLETE** - Smart outlines from topics or notes!
-- 🎉 **PHASE 2.2 COMPLETE** - Professional-grade grammar and style analysis!
-- 🎉 **PHASE 2.3 COMPLETE** - Bulletproof argument analysis!
+- 🎉 **PHASE 2 COMPLETE** - Professional intelligence & polish features shipped!
+  - Smart outlines from topics or notes
+  - Professional-grade grammar and style analysis
+  - Bulletproof argument analysis with fallacy detection
 
 **Note**: Phase 3 was built ahead of Phases 1-2 as a proof-of-concept for research capabilities.
 The roadmap phases below represent the original planning sequence, not implementation order.
@@ -32,10 +36,20 @@ The roadmap phases below represent the original planning sequence, not implement
 
 ## 🎯 Vision
 
-**Transform AI Essay into the premier platform for creating, improving, and perfecting essays using multiple AI models.**
+**Personal tool for mining truth and insight through AI-assisted intellectual exploration.**
 
-**Target Users**: Students, writers, educators, content creators
-**Core Value**: Multi-model AI collaboration that creates better essays than any single AI assistant
+**Philosophy**: Exceptional writing emerges from rigorous thinking. This tool uses multiple AI models as thinking partners to refine ideas, challenge assumptions, and uncover deeper truths.
+
+**Core Purpose**:
+- **Truth-seeking**: Identify logical fallacies, weak arguments, and unsupported claims
+- **Depth over speed**: Iterative refinement until ideas reach their fullest expression
+- **Multi-perspective analysis**: Different AI models challenge ideas from different angles
+- **Intellectual rigor**: Grammar, clarity, and argument strength at exceptional levels
+
+**Not about**: Faster essay production or meeting word counts
+**About**: Thoughtful, accurate, insightful content that stands up to scrutiny
+
+**Deployment**: Local CLI tool (not a public service)
 
 ---
 
@@ -61,11 +75,18 @@ The roadmap phases below represent the original planning sequence, not implement
 
 ---
 
-## 🚀 v3.0: Essay Maker Platform (NEW DIRECTION)
+## 🚀 v3.0: Intellectual Refinement Platform (NEW DIRECTION)
 
-**Goal**: Transform from research tool to practical essay creation assistant
-**Timeline**: 6 months (January - June 2025)
-**Target Launch**: Public beta by end of Phase 3
+**Goal**: Transform from research tool to thinking partner for truth-seeking
+**Scope**: Personal CLI tool for achieving exceptional content quality
+**Timeline**: Iterative development driven by intellectual needs
+**Focus**: Depth and rigor over productivity metrics
+
+**Guiding Questions**:
+- Does this help me think more deeply?
+- Does this expose weak reasoning or unsupported claims?
+- Does this push my ideas to their logical conclusions?
+- Does this help me discover truth, not just win arguments?
 
 ---
 
@@ -88,9 +109,9 @@ The roadmap phases below represent the original planning sequence, not implement
 - New `src/essay.py` module with `EssayDrafter` class
 - Reuse existing `MetricsCollector` for comparison
 
-**Deliverable**: Users can generate multiple essay versions and choose the best
+**Deliverable**: Multiple perspectives on same topic reveal hidden assumptions
 
-**Success Metric**: 3+ drafts generated in under 2 minutes
+**Success Metric**: Different models expose different angles of thought, leading to richer synthesis
 
 ---
 
@@ -120,9 +141,9 @@ uv run essay.py analyze my_essay.txt
 # ❌ Conclusion missing
 ```
 
-**Deliverable**: Users understand their essay structure and gaps
+**Deliverable**: Clear understanding of argument structure reveals weak foundations
 
-**Success Metric**: Correctly identifies structure in 90% of essays
+**Success Metric**: Identifies gaps in logic and missing supporting evidence
 
 ---
 
@@ -152,9 +173,9 @@ uv run essay.py improve my_essay.txt --cycles 5 --target-score 85
 # Final: Clarity 86, Grammar 92 ✅ Target reached!
 ```
 
-**Deliverable**: Essays systematically improve through AI feedback
+**Deliverable**: Ideas refined through systematic critique until they withstand scrutiny
 
-**Success Metric**: 20+ point clarity improvement on average
+**Success Metric**: Each iteration exposes and resolves fundamental weaknesses in reasoning
 
 ---
 
@@ -180,13 +201,18 @@ uv run python -m src.essay improve drafts/20241123_*/anthropic_claude-3-haiku.tx
 ```
 
 **Status**: ✅ Implemented and tested (40 tests passing)
-**Next**: Phase 2 - Intelligence & Polish features
+**Value**: Foundation for intellectual exploration - draft, analyze structure, refine iteratively
+**Next**: Phase 2 - Deeper analysis capabilities
 
 ---
 
-## Phase 2: Intelligence & Polish (Weeks 7-12)
+## Phase 2: Intellectual Rigor (Weeks 7-12) ✅ COMPLETE
 
-**Goal**: Add sophisticated analysis and professional-quality output
+**Goal**: Add tools for deep analysis - expose weak reasoning, unclear writing, and logical fallacies
+
+**Philosophy**: Exceptional content requires exceptional scrutiny. These tools reveal what human readers might miss.
+
+**Status**: ✅ All features implemented and tested (104 tests passing)
 
 ### 2.1: Smart Outline Generator (Weeks 7-8) ✅ COMPLETE
 
@@ -214,9 +240,9 @@ uv run essay.py outline \
 uv run essay.py draft --from-outline outline.md
 ```
 
-**Deliverable**: Never start with a blank page
+**Deliverable**: Structured thinking framework before writing
 
-**Success Metric**: Outlines rated 4+ stars by 80% of users
+**Success Metric**: Outline reveals logical flow and ensures complete coverage of topic
 
 ---
 
@@ -249,21 +275,21 @@ uv run essay.py optimize my_essay.txt \
 # ✅ Active voice: 85% (was 60%)
 ```
 
-**Deliverable**: Professional-quality polished essays
+**Deliverable**: ✅ Crystal-clear communication without clichés or bloat
 
-**Success Metric**: Readability improvement of 2+ grade levels
+**Success Metric**: ✅ Every sentence serves a purpose; no weak verbs or passive constructions obscure meaning
 
 ---
 
-### 2.3: Argument Analyzer & Strengthener (Weeks 11-12)
+### 2.3: Argument Analyzer & Strengthener (Weeks 11-12) ✅ COMPLETE
 
 **Features**:
-- [ ] Identify main thesis and supporting claims
-- [ ] Detect logical fallacies (ad hominem, straw man, circular reasoning, etc.)
-- [ ] Rate argument strength (1-10 scale)
-- [ ] Suggest evidence to strengthen weak claims
-- [ ] Generate counterarguments to address
-- [ ] Argument flow visualization
+- [x] Identify main thesis and supporting claims
+- [x] Detect logical fallacies (ad hominem, straw man, circular reasoning, etc.)
+- [x] Rate argument strength (1-10 scale)
+- [x] AI-powered critique and improvement suggestions
+- [ ] Generate counterarguments to address (future enhancement)
+- [ ] Argument flow visualization (future enhancement)
 
 **Technical**:
 - New `src/argument.py` module
@@ -273,63 +299,84 @@ uv run essay.py optimize my_essay.txt \
 
 **CLI**:
 ```bash
-uv run essay.py analyze-argument my_essay.txt
+uv run python -m src.essay analyze-argument my_essay.txt
 
 # Output:
-# Thesis: "AI will replace most jobs by 2030"
+# Thesis Statement:
+# "AI will replace most jobs by 2030"
 #
 # Supporting Claims:
-# 1. "Automation is accelerating" - Strong (cited evidence)
-# 2. "Humans can't compete" - Weak (overgeneralization fallacy)
-# 3. "History shows this pattern" - Moderate (needs more evidence)
+# 1. Automation is accelerating
+#    Type: supporting
+#    Strength: STRONG
+#    Evidence: Cited evidence from industry reports
+#    Analysis: Well-supported with data
 #
-# Counterarguments to Address:
-# - New jobs will be created
-# - Human creativity remains unique
+# 2. Humans can't compete
+#    Type: supporting
+#    Strength: WEAK
+#    Evidence: None
+#    Analysis: Overgeneralization without evidence
 #
-# Suggested Improvements:
-# - Add evidence for claim 2
-# - Address counterargument 1 in paragraph 3
+# Detected Logical Fallacies:
+# • Hasty Generalization: "Robots will take all our jobs by 2030"
+#   Sweeping claim without sufficient evidence
+#
+# Overall Evaluation:
+# Strength Score: 6/10
+# The argument shows promise but needs stronger evidence...
+#
+# Suggestions for Improvement:
+# 1. Add statistical evidence for automation claims
+# 2. Address counterarguments about job creation
+# 3. Strengthen weak claims with research
 ```
 
-**Deliverable**: Bulletproof arguments
+**Deliverable**: ✅ Rigorous logical analysis that exposes flawed reasoning
 
-**Success Metric**: 30% improvement in argument strength scores
+**Success Metric**: ✅ Identifies fallacies, weak claims, and missing evidence - forces intellectual honesty
 
 ---
 
-### Phase 2 Deliverable
+### Phase 2 Deliverable ✅ COMPLETE
 
-**Enhanced Feature Set**:
-- Outline generation
-- Professional grammar and clarity
-- Strong, logical arguments
+**Intellectual Toolkit**:
+- ✅ **Outline generation**: Think before writing, structure before details
+- ✅ **Grammar/clarity optimization**: Remove obstacles to understanding
+- ✅ **Argument analysis**: Expose logical fallacies and weak reasoning
 
-**Complete Workflow**:
+**The Refinement Workflow**:
 ```bash
-# Start to finish
-uv run essay.py create \
-    --topic "AI in Education" \
-    --type argumentative \
-    --length 1500
+# Generate outline
+uv run python -m src.essay outline --topic "AI in Education" --template argumentative
 
-# This internally:
-# 1. Generates outline
-# 2. Creates multiple drafts
-# 3. Analyzes structure
-# 4. Checks arguments
-# 5. Optimizes grammar/clarity
-# 6. Improves iteratively
-# 7. Outputs polished essay
+# Optimize grammar and style
+uv run python -m src.essay optimize my_essay.txt --apply-fixes --target-grade-level 12
+
+# Analyze argument strength
+uv run python -m src.essay analyze-argument my_essay.txt
+
+# Workflow for exceptional content:
+# 1. Outline (structure thinking) → 2. Multi-model drafts (diverse perspectives) →
+# 3. Analyze structure (identify gaps) → 4. Check arguments (expose fallacies) →
+# 5. Optimize clarity (remove noise) → 6. Iterate until ideas withstand scrutiny
 ```
 
-**Validation**: 100 essays created, measure grade improvements
+**Validation**: ✅ 104 tests passing, all features ready for truth-seeking
+
+**Philosophy**: Each tool reveals a different dimension of quality:
+- **Analyzer**: Is the structure sound?
+- **Argument checker**: Is the reasoning valid?
+- **Optimizer**: Is the communication clear?
+- **Improver**: Can this withstand deeper scrutiny?
 
 ---
 
-## Phase 3: Research & Content (Weeks 13-18)
+## Phase 3: Evidence & Truth (Weeks 13-18)
 
-**Goal**: Add research capabilities and academic rigor
+**Goal**: Ground arguments in evidence, verify claims, build on existing knowledge
+
+**Philosophy**: Truth-seeking requires standing on the shoulders of giants. Research isn't about citations - it's about building on what's already known and verified.
 
 ### 3.1: Citation Generator & Manager (Weeks 13-15)
 
@@ -360,9 +407,9 @@ uv run essay.py cite my_essay.txt \
 # ✅ Flagged 2 uncited claims
 ```
 
-**Deliverable**: Properly cited academic essays
+**Deliverable**: Claims properly attributed to sources, intellectual honesty maintained
 
-**Success Metric**: Zero plagiarism flags in tests
+**Success Metric**: Every assertion either supported by evidence or acknowledged as speculation
 
 ---
 
@@ -402,9 +449,9 @@ uv run essay.py research my_essay.txt \
 # ✅ Updated bibliography
 ```
 
-**Deliverable**: Well-researched, evidence-based essays
+**Deliverable**: Arguments built on verified knowledge, not assumptions
 
-**Success Metric**: Average 7+ credible sources per essay
+**Success Metric**: Key claims supported by peer-reviewed research, speculation clearly marked
 
 ---
 
@@ -427,33 +474,30 @@ uv run essay.py academic \
     --output research_paper.pdf
 ```
 
-**Validation**: Partner with 3 universities for pilot testing
+**Validation**: Personal research workflow - can I find truth faster and build on solid evidence?
 
 ---
 
-## Phase 4: Templates & User Experience (Weeks 19-24)
+## Phase 4: Templates & User Experience (Weeks 19-24) - OPTIONAL
 
-**Goal**: Make essay creation accessible and guided
+**Goal**: Make essay creation more streamlined for personal use
 
-### 4.1: Template Library (Weeks 19-20)
+### 4.1: Template Library (Weeks 19-20) - OPTIONAL
 
 **Features**:
-- [ ] 20+ pre-built essay templates
+- [ ] 5-10 pre-built essay templates for personal use
   - Argumentative (5-paragraph, extended)
-  - Analytical (literary analysis, film analysis)
-  - Narrative (personal, literacy narrative)
+  - Analytical (literary analysis)
   - Comparative (compare/contrast)
   - Research paper
-  - College application essays
-- [ ] Subject-specific templates (history, literature, science)
 - [ ] Template customization
-- [ ] Community template sharing
+- [ ] Local template library (stored in ~/.essay-templates/)
 
 **Technical**:
 - Templates stored in `templates/essays/`
 - YAML format with metadata
 - Template rendering engine
-- Template marketplace (future)
+- Local storage in user home directory
 
 **CLI**:
 ```bash
@@ -471,13 +515,13 @@ uv run essay.py template-create \
     --name "My Style"
 ```
 
-**Deliverable**: Quick-start essay creation
+**Deliverable**: Quick-start essay creation with personal templates
 
-**Success Metric**: 70% of essays start from templates
+**Success Metric**: Templates improve personal workflow efficiency
 
 ---
 
-### 4.2: Guided Wizard (Weeks 21-22)
+### 4.2: Guided Wizard (Weeks 21-22) - OPTIONAL
 
 **Features**:
 - [ ] Interactive question-based essay creation
@@ -521,13 +565,13 @@ uv run essay.py wizard
 # ✅ Done! Saved to essay_2024-01-15.txt
 ```
 
-**Deliverable**: Beginner-friendly interface
+**Deliverable**: Streamlined workflow for quick essay creation
 
-**Success Metric**: 90% wizard completion rate
+**Success Metric**: Reduces time to start writing by 50%
 
 ---
 
-### 4.3: Export & Formatting (Weeks 23-24)
+### 4.3: Export & Formatting (Weeks 23-24) - OPTIONAL
 
 **Features**:
 - [ ] Export to multiple formats:
@@ -557,7 +601,7 @@ uv run essay.py export my_essay.txt \
 
 **Deliverable**: Professional submission-ready documents
 
-**Success Metric**: All major formats supported
+**Success Metric**: Successfully export to all common academic formats
 
 ---
 
@@ -585,13 +629,13 @@ uv run essay.py create \
     --export pdf
 ```
 
-**Validation**: User testing with non-technical users
+**Validation**: Personal workflow testing with various essay types
 
 ---
 
-## Phase 5: Collaboration & Learning (Weeks 25-30)
+## Phase 5: Personal Productivity Features (Weeks 25-30) - OPTIONAL
 
-**Goal**: Build community and personalized learning
+**Goal**: Track personal progress and automate workflows
 
 ### 5.1: Essay Version Control (Weeks 25-26)
 
@@ -627,27 +671,26 @@ uv run essay.py diff v1 v3
 uv run essay.py rollback my_essay.txt v2
 ```
 
-**Deliverable**: Never lose work, track progress
+**Deliverable**: Never lose work, track progress locally
 
-**Success Metric**: Average 8 versions per essay
+**Success Metric**: Easy rollback and comparison of essay versions
 
 ---
 
-### 5.2: Personalized Writing Coach (Weeks 27-28)
+### 5.2: Personal Writing Analytics (Weeks 27-28) - OPTIONAL
 
 **Features**:
-- [ ] Track writing metrics over time
-- [ ] Identify recurring mistakes
-- [ ] Personalized improvement lessons
-- [ ] Progress visualization
-- [ ] Goal setting and tracking
-- [ ] Writing streak gamification
+- [ ] Track writing metrics over time (local SQLite DB)
+- [ ] Identify recurring mistakes in personal writing
+- [ ] Progress visualization (terminal charts)
+- [ ] Local statistics dashboard
+- [ ] Export writing analytics to CSV
 
 **Technical**:
-- User profile database (SQLite)
+- Local database (SQLite) stored in ~/.essay-maker/
 - Pattern recognition for common errors
-- Progress dashboard
-- Lesson generation using AI
+- Terminal-based progress dashboard
+- Historical trend analysis
 
 **CLI**:
 ```bash
@@ -672,65 +715,74 @@ uv run essay.py dashboard
 # "Mastering Transitions" (15 min)
 ```
 
-**Deliverable**: Continuous improvement system
+**Deliverable**: Personal writing improvement tracking
 
-**Success Metric**: 30% skill improvement over 10 essays
+**Success Metric**: Measurable improvement in clarity/grammar scores over time
 
 ---
 
-### 5.3: Template & Essay Sharing (Weeks 29-30)
+### 5.3: Workflow Automation (Weeks 29-30) - OPTIONAL
 
 **Features**:
-- [ ] Share essays publicly (optional)
-- [ ] Browse community essays for inspiration
-- [ ] Share custom templates
-- [ ] Upvote/rate community content
-- [ ] Follow favorite writers
-- [ ] Export portfolio of best work
+- [ ] Shell scripts for common workflows
+- [ ] Batch processing multiple essays
+- [ ] Custom pipeline configuration
+- [ ] Pre-commit hooks for essay quality checks
+- [ ] Export portfolio of best work (local HTML/PDF)
 
 **Technical**:
-- Web backend (FastAPI) for sharing
-- Simple web UI for browsing
-- User authentication
-- Content moderation
+- Bash/Python scripts for automation
+- Configuration files for custom workflows
+- Integration with Git hooks
+- Local HTML portfolio generator
 
-**Web UI** (minimal):
+**Example Scripts**:
+```bash
+# Quick essay workflow
+./scripts/quick-essay.sh "My Topic"
+
+# Batch improve all drafts in a directory
+./scripts/batch-improve.sh ./drafts/
+
+# Generate portfolio site
+./scripts/generate-portfolio.sh
 ```
-essayai.com/gallery
-- Featured Essays
-- Top Rated Templates
-- Recent Uploads
-- Search by topic/type
-```
 
-**Deliverable**: Community-driven content
+**Deliverable**: Automated personal workflows
 
-**Success Metric**: 100+ shared templates in first month
+**Success Metric**: Common tasks automated with single commands
 
 ---
 
-### Phase 5 Deliverable
+### Phase 5 Deliverable - OPTIONAL
 
-**Community Platform**:
-- Version control
-- Personal coach
-- Sharing & collaboration
+**Personal Productivity Platform**:
+- Version control for essays
+- Personal writing analytics
+- Workflow automation
 
-**Learning Journey**:
+**Personal Analytics**:
 ```bash
-# Track progress over time
-uv run essay.py progress
+# Track personal progress over time
+uv run python -m src.essay stats
 
-# Month 1: Clarity 65 avg
-# Month 2: Clarity 78 avg (+13)
-# Month 3: Clarity 87 avg (+9)
+# Personal Writing Statistics
+# ━━━━━━━━━━━━━━━━━━━━
+# Essays Written: 15
+# Avg Clarity: 82 → 89 (+7)
+# Avg Grade Level: 11.2
 #
-# You're in the top 20% of users! 🎉
+# Improvement Trends:
+# Clarity:   📈 +7 points over 3 months
+# Grammar:   📈 +12 points over 3 months
+# Arguments: 📊 Stable at 85
 #
-# Next milestone: 90+ clarity (3 points away)
+# Common Issues Fixed:
+# ✅ Passive voice reduced by 40%
+# ✅ Avg sentence length improved
 ```
 
-**Validation**: 1000 essays created, active community
+**Validation**: Personal workflow significantly improved
 
 ---
 
@@ -739,47 +791,51 @@ uv run essay.py progress
 | Version | Focus | Timeline | Key Feature |
 |---------|-------|----------|-------------|
 | **v2.0** ✅ | Research Tool | Complete | Multi-model testing framework |
-| **v3.0** 🚀 | Essay Creation | 6 months | Multi-model drafting + improvement |
-| **v3.1** | Intelligence | +2 months | Outlines, arguments, optimization |
-| **v3.2** | Research | +2 months | Citations, source finding |
-| **v3.3** | Templates | +2 months | Templates, wizard, exports |
-| **v3.4** | Community | +2 months | Sharing, coaching, progress |
+| **v3.0** 🚀 | Essay Creation | Complete | Multi-model drafting + improvement |
+| **v3.1** | Intelligence | Complete | Outlines, arguments, optimization |
+| **v3.2** | Research | 90% | Citations, source finding |
+| **v3.3** | Templates | Optional | Templates, wizard, exports |
+| **v3.4** | Analytics | Optional | Version control, analytics, automation |
 
-**Total Timeline**: 6 months to v3.0 launch, +8 months to v3.4 full platform
+**Total Timeline**: Core features complete, optional enhancements as needed
 
 ---
 
 ## Success Metrics by Phase
 
-### Phase 1 (Weeks 1-6)
-- [ ] 50 beta users
-- [ ] 200+ essays generated
-- [ ] 4.0+ satisfaction rating
-- [ ] 85% would recommend
+### Phase 1 (Weeks 1-6) ✅ COMPLETE
+**Value Delivered**: Multi-perspective exploration and iterative refinement
+- ✅ Different AI models expose different angles of thought
+- ✅ Structural analysis reveals gaps in reasoning
+- ✅ Iterative improvement pushes ideas to their limits
+- ✅ 40 tests ensure reliability
 
-### Phase 2 (Weeks 7-12)
-- [ ] 200 active users
-- [ ] 1000+ essays generated
-- [ ] 25% grade improvement reported
-- [ ] 10+ testimonials collected
+### Phase 2 (Weeks 7-12) ✅ COMPLETE
+**Value Delivered**: Intellectual rigor and logical scrutiny
+- ✅ Fallacy detection prevents self-deception
+- ✅ Grammar/clarity optimization removes noise from signal
+- ✅ Argument strength scoring forces honest self-assessment
+- ✅ 104 tests ensure these tools are trustworthy
 
-### Phase 3 (Weeks 13-18)
-- [ ] 500 active users
-- [ ] 5000+ essays generated
-- [ ] 3 university partnerships
-- [ ] Featured in ed-tech publication
+### Phase 3 (Weeks 13-18) - 90% Complete
+**Value Delivered**: Evidence-based reasoning
+- ✅ Find peer-reviewed research to support (or refute) claims
+- ✅ Fact-checking prevents confident falsehoods
+- ✅ Proper attribution maintains intellectual honesty
+- [ ] Complete remaining 10% if writing research-heavy content
+- [ ] Validate: Does research integration help me find truth?
 
-### Phase 4 (Weeks 19-24)
-- [ ] 1000 active users
-- [ ] 10,000+ essays generated
-- [ ] 50+ community templates
-- [ ] 4.5+ app store rating
+### Phase 4 (Weeks 19-24) - Optional Enhancements
+- [ ] Template library for common essay types
+- [ ] Guided wizard for beginners
+- [ ] Export to multiple formats (PDF, DOCX, LaTeX)
+- [ ] Custom formatting presets
 
-### Phase 5 (Weeks 25-30)
-- [ ] 2500 active users
-- [ ] 25,000+ essays generated
-- [ ] 500+ shared essays/templates
-- [ ] Revenue: $5K MRR
+### Phase 5 (Weeks 25-30) - Optional Advanced Features
+- [ ] Version control for essay iterations
+- [ ] Personal writing progress tracking
+- [ ] Local template library
+- [ ] Workflow automation scripts
 
 ---
 
@@ -792,170 +848,169 @@ CLI → OpenRouter → Models
     File Output
 ```
 
-### Target (v3.4)
+### Target (v3.4 - Optional)
 ```
-CLI ──┐
-      ├→ API (FastAPI) → OpenRouter → Models
-Web ──┘         ↓
-              Database (PostgreSQL)
-                ↓
-         File Storage (S3)
-              ↓
-         Analysis Engine
-              ↓
-         Export Engine
+CLI → OpenRouter → Models
+      ↓
+    Local SQLite DB (optional analytics)
+      ↓
+    Local File Storage
+      ↓
+    Analysis Engine
+      ↓
+    Export Engine
 ```
 
-**Migration Strategy**:
-- Keep CLI as primary interface
-- Build API backend gradually
-- Add web UI in Phase 5
-- Maintain backwards compatibility
+**Architecture Principles**:
+- CLI as only interface (no web UI needed)
+- Local storage only (no cloud services)
+- Optional local database for analytics
+- All features work offline (except AI API calls)
 
 ---
 
 ## Resource Requirements
 
-### Development Team
-- **Phase 1-2**: 1 developer (can be solo)
-- **Phase 3-4**: 1-2 developers
-- **Phase 5**: 2 developers + 1 designer (for web UI)
+### Development
+- **Solo developer** (personal project)
+- **Time investment**: As needed, no strict timeline
 
 ### Infrastructure
-- **Phase 1-3**: Local development, minimal costs
-- **Phase 4**: Shared server ($50/month)
-- **Phase 5**: Web hosting + database ($200/month)
+- **All phases**: Local development only
+- **No hosting costs**: CLI tool runs locally
+- **No database costs**: Local SQLite if analytics needed
 
 ### AI Costs
-- **Phase 1**: ~$100/month (testing)
-- **Phase 2-3**: ~$500/month (beta users)
-- **Phase 4-5**: ~$2000/month (scaled usage)
+- **Personal use**: ~$10-50/month depending on usage
+- **Pay-as-you-go**: OpenRouter API charges only when used
+- **Cost control**: Set API limits in OpenRouter dashboard
 
-**Total Investment**: ~$10K over 6 months (mostly API costs)
+**Total Investment**: Minimal ongoing costs (~$10-50/month for API usage)
 
 ---
 
 ## Risk Mitigation
 
 ### Technical Risks
-- **API costs spiral**: Implement caching, rate limiting, tiered pricing
-- **Quality inconsistency**: Multiple improvement cycles, human review option
+- **API costs too high**: Implement caching, use cheaper models for drafts
+- **Quality inconsistency**: Multiple improvement cycles, manual review
 - **Model availability**: Abstract model interface, easy to swap providers
 
-### Market Risks
-- **Low adoption**: Strong beta program, student ambassadors, referrals
-- **Competition**: Focus on multi-model unique value proposition
-- **Academic integrity concerns**: Built-in transparency, educator controls
-
-### Business Risks
-- **Monetization failure**: Freemium model tested early, institutional sales
-- **Regulatory issues**: Legal review of terms, plagiarism prevention features
-- **Scaling costs**: Progressive rollout, usage-based pricing
+### Personal Use Risks
+- **Feature creep**: Focus on core features that add value
+- **Maintenance burden**: Keep dependencies minimal and stable
+- **API key security**: Store keys securely in .env, never commit
 
 ---
 
-## Go/No-Go Decision Points
+## Personal Evaluation Checkpoints
 
-### After Phase 1 (Week 6)
-**Question**: Is the core value proposition validated?
-- ✅ GO if: 80%+ users find multi-model drafting valuable
-- ❌ NO-GO if: Users prefer single model, features not used
+### After Phase 1 & 2 ✅ COMPLETE
+**Question**: Do these tools help me think deeper and discover truth?
+- ✅ YES: Multi-model perspectives reveal blind spots
+- ✅ YES: Fallacy detection exposes flawed reasoning
+- ✅ YES: Iterative improvement pushes ideas further than I'd go alone
 
-### After Phase 2 (Week 12)
-**Question**: Can we create high-quality essays?
-- ✅ GO if: 70%+ essays rated "good" or better
-- ❌ NO-GO if: Quality is inconsistent, too much manual work
+### After Phase 3 (Current)
+**Question**: Does research integration strengthen truth-seeking?
+- ✅ GO if: Need to verify claims against existing knowledge
+- ✅ GO if: Want to build on peer-reviewed foundations
+- ⏸️ PAUSE if: Writing exploratory/philosophical content without empirical claims
 
-### After Phase 3 (Week 18)
-**Question**: Is this better than existing tools?
-- ✅ GO if: Net Promoter Score >40, clear differentiation
-- ❌ NO-GO if: Not significantly better than ChatGPT/Grammarly
+### After Phase 4 (Optional)
+**Question**: Do templates/exports enhance intellectual output?
+- ✅ GO if: Specific formats help organize complex thinking
+- ⏸️ SKIP if: Current tools sufficient for clarity and rigor
 
-### After Phase 4 (Week 24)
-**Question**: Can this scale to 1000+ users?
-- ✅ GO if: Growth trajectory positive, costs sustainable
-- ❌ NO-GO if: Unit economics don't work, churn too high
-
----
-
-## Next Steps (Week 1)
-
-### Immediate Actions
-1. [ ] Create `essay.py` skeleton with draft command
-2. [ ] Prototype multi-model drafting with 2 models
-3. [ ] Test with 3 different essay topics
-4. [ ] Document initial learnings
-
-### Week 1 Goal
-**Ship something usable**: Even if rough, get multi-model drafting working end-to-end
-
-```bash
-# Week 1 target
-uv run essay.py draft \
-    --topic "AI in education" \
-    --models claude,gpt \
-    --output-dir week1_test/
-
-# Success = 2 different drafts generated
-```
-
-### Week 1 Deliverable
-- Working prototype (even if messy)
-- 5 test essays generated
-- Learnings documented
-- Phase 1 detailed plan refined
+### After Phase 5 (Optional)
+**Question**: Does tracking progress reveal patterns in my thinking?
+- ✅ GO if: Want to identify recurring weak spots in reasoning
+- ⏸️ SKIP if: Each piece of writing stands alone
 
 ---
 
-## Long-Term Vision (v4.0+)
+## Next Steps
 
-Beyond v3.4, potential future directions:
+### Immediate Priorities (Optional Phase 3 Completion)
+**Decision**: Complete Phase 3 only if actively writing academic papers
 
-### Advanced Features
-- Real-time collaborative editing (Google Docs style)
-- Voice-to-essay (speak your ideas, AI writes)
-- Essay Q&A chatbot (ask questions about your essay)
-- Style transfer (write like Hemingway, academic journals, etc.)
-- Multilingual support (write in any language)
+If continuing Phase 3:
+1. [ ] Citation format switching (convert MLA → APA)
+2. [ ] Inline citation suggestions (auto-insert at claim sites)
+3. [ ] AI-powered research gap analysis
 
-### Platform Expansion
-- Mobile apps (iOS, Android)
-- Browser extensions (write anywhere)
-- LMS integrations (Canvas, Blackboard)
-- API for third-party developers
-- Enterprise features for businesses
+If moving on:
+- ✅ Core features complete and usable
+- ✅ 104 tests passing, all stable
+- ✅ Ready for daily use as-is
 
-### Business Model
-- Freemium: 10 essays/month free
-- Student: $9/month unlimited
-- Premium: $19/month advanced features
-- Institutional: Custom pricing for schools
-- API access: Pay-per-use for developers
+### Optional Future Enhancements (As Needed)
+- [ ] Phase 4: Templates if writing similar essays frequently
+- [ ] Phase 4: Export formats if submitting to different venues
+- [ ] Phase 5: Analytics if tracking progress over time
+- [ ] Phase 5: Automation for repetitive workflows
+
+### Maintenance & Polish
+- [ ] Add more example files for testing
+- [ ] Improve error messages and user feedback
+- [ ] Document personal workflow tips
+- [ ] Performance optimization for large essays (3000+ words)
+
+---
+
+## Long-Term Vision (Optional)
+
+Potential future enhancements if desired:
+
+### Advanced Features (Low Priority)
+- Voice-to-essay (speak ideas, AI writes draft)
+- Essay Q&A chatbot (interactive editing)
+- Style transfer (write like specific authors/journals)
+- Multilingual support (write in multiple languages)
+
+### Integration Ideas (Low Priority)
+- Obsidian/Notion plugin for note integration
+- Git integration for version control
+- Markdown preview in terminal
+- Integration with reference managers (Zotero, Mendeley)
+
+### Not Planned (Out of Scope)
+- ❌ Web UI or mobile apps (CLI only)
+- ❌ Multi-user features or collaboration
+- ❌ Public sharing or community features
+- ❌ Monetization or business model
+- ❌ Cloud hosting or SaaS deployment
 
 ---
 
 ## Conclusion
 
-**This roadmap transforms AI Essay from a research tool into a comprehensive essay platform in 6 months.**
+**This roadmap transforms AI Essay from a research tool into a thinking partner for truth-seeking.**
 
-**Key Principles**:
-1. **Ship incrementally**: Value every 2 weeks
-2. **Validate continuously**: Go/no-go at each phase
-3. **Focus on quality**: Better essays, not just faster
-4. **Build community**: Users become advocates
-5. **Maintain CLI**: Power users love command line
+**Core Philosophy**:
+1. **Truth over productivity**: Better thinking matters more than faster writing
+2. **Rigor over ease**: Expose flaws in reasoning, even when uncomfortable
+3. **Multi-perspective**: Different models challenge assumptions in different ways
+4. **Evidence-based**: Claims require support; speculation requires acknowledgment
+5. **Iterative refinement**: Good ideas become exceptional through repeated scrutiny
 
 **Success Looks Like**:
-- Students write better essays faster
-- Educators see quality improvements
-- Community shares and learns together
-- Sustainable business model
-- Leading AI writing platform
+- ✅ **Deeper thinking**: Multi-model analysis reveals blind spots in reasoning
+- ✅ **Intellectual honesty**: Fallacy detection prevents self-deception
+- ✅ **Clarity of thought**: Grammar optimization removes noise, revealing core ideas
+- ✅ **Evidence-based**: Research integration grounds arguments in verified knowledge
+- ✅ **Exceptional quality**: Content that withstands rigorous scrutiny
 
-**Let's build the future of essay writing. 🚀**
+**Not just writing better - thinking better. Mining for truth. 🔍**
+
+---
+
+**The Ultimate Goal**:
+Use AI models not as ghostwriters, but as tireless critics and thinking partners. Each model challenges ideas from a different angle. Together, they push thinking to levels of rigor and insight difficult to achieve alone. The result: content that is not just well-written, but deeply *true* - or honestly uncertain where truth remains elusive.
 
 ---
 
 **Last Updated**: November 23, 2024
 **Owner**: Stephen Witty (switty@level500.com)
-**Next Review**: End of Phase 1 (Week 6)
+**Status**: Phase 2 Complete - Moving to Phase 3 finalization
+**Next Review**: End of Phase 3 (targeting 100% completion)
