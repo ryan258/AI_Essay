@@ -2,21 +2,18 @@
 
 This roadmap charts the evolution from AI response testing tool (v2.0) to comprehensive essay creation and improvement platform (v3.0+).
 
-**📍 CURRENT STATUS (November 2024):**
+**📍 CURRENT STATUS (February 2025):**
 - ✅ v2.0: Complete - Research tool foundation with OpenRouter integration
 - ✅ **Phase 1: COMPLETE** - Core essay creation (drafting, analysis, improvement)
 - ✅ **Phase 2: COMPLETE** - Intelligence & Polish (outlines, grammar optimization, argument analysis)
   - ✅ Phase 2.1: Smart outline generator
   - ✅ Phase 2.2: Grammar & clarity optimizer
   - ✅ Phase 2.3: Argument analyzer
-- ✅ **Phase 3: COMPLETE** - Research & citation capabilities
-- ✅ **Phase 4: COMPLETE** - Templates, Wizard & Export
-  - ✅ Template library system
-  - ✅ Interactive essay wizard
-  - ✅ Export to PDF/DOCX/HTML
+- ⚠️ **Phase 3: MOSTLY COMPLETE** - Research & citation capabilities (inline markers added; auto inline/style switching still TODO)
+- ✅ **Phase 4: COMPLETE** - Templates, Wizard & Export (LaTeX/custom presets deferred)
 - ⏸️  Phase 5: OPTIONAL - Personal productivity features
 
-**Recent Progress (November 23-24, 2024):**
+**Recent Progress (Nov 2024 → Feb 2025):**
 - ✅ Implemented Phase 1.1: Multi-model essay drafting with async parallelization
 - ✅ Implemented Phase 1.2: Comprehensive structure analyzer with scoring
 - ✅ Implemented Phase 1.3: Basic improvement engine with multi-dimensional scoring
@@ -24,6 +21,9 @@ This roadmap charts the evolution from AI response testing tool (v2.0) to compre
 - ✅ Implemented Phase 2.2: Grammar & clarity optimizer with readability metrics
 - ✅ Implemented Phase 2.3: Argument analyzer with fallacy detection and strength scoring
 - ✅ Implemented Phase 4: Template library + Interactive wizard
+- ✅ Added event-loop-safe drafting for notebooks/REPLs
+- ✅ `template_create` derives structure from supplied essay files
+- ✅ `cite` inserts `[citation needed]` markers and can append bibliographies
 - ✅ Fixed technical debt: Test infrastructure, dependencies, API timeouts
 - ✅ Refactored CLI with DRY principles (eliminated model initialization duplication)
 - ✅ Added comprehensive robustness testing and error handling
@@ -268,10 +268,9 @@ uv run essay.py draft --from-outline outline.md
 - [x] Active/passive voice analysis
 
 **Technical**:
-- Integration with LanguageTool API (open source)
-- Custom AI prompts for clarity improvements
-- New `src/optimizer.py` module
-- Readability metrics using `textstat` library
+- Heuristic + optional AI model path in `src/optimizer.py`
+- Custom prompts for clarity improvements when a model is provided
+- Readability metrics via `textstat` when installed, with fallback approximations
 
 **CLI**:
 ```bash
@@ -393,8 +392,8 @@ uv run python -m src.essay analyze-argument my_essay.txt
 
 **Features**:
 - [x] Detect claims that need citations
-- [x] Insert citations in any format (MLA, APA, Chicago, IEEE)
-- [x] Auto-generate bibliography
+- [~] Insert inline citation markers (adds `[citation needed]`; user maps sources)
+- [x] Auto-generate bibliography (when sources are present)
 - [x] Plagiarism prevention (detect uncited quotes)
 - [ ] Citation format switching (convert MLA → APA)
 - [ ] Inline citation suggestions (auto-insert at claim sites)
@@ -466,12 +465,13 @@ uv run essay.py research my_essay.txt \
 
 ---
 
-### Phase 3 Deliverable ✅ COMPLETE
+### Phase 3 Deliverable ✅/⚠️ (Citation insertion still in progress)
 
 **Research-Ready Platform**:
 - ✅ Automatic source finding
 - ✅ Proper citation management (APA, MLA, IEEE, Chicago)
 - ✅ Evidence-based arguments with Gap Analysis
+- ⚠️ Inline citation placement + style switching still pending
 
 **Academic Workflow**:
 ```bash
@@ -956,8 +956,8 @@ CLI → OpenRouter → Models
 
 ## Next Steps
 
-### Current Status (November 24, 2024)
-**Phases 1-4: COMPLETE** ✅
+### Current Status (February 2025)
+**Phases 1-4: COMPLETE with minor gaps** ✅
 
 Core platform features fully implemented:
 - ✅ Multi-model drafting and iterative improvement
@@ -965,7 +965,7 @@ Core platform features fully implemented:
 - ✅ Grammar optimization and readability analysis
 - ✅ Argument analysis with fallacy detection
 - ✅ Research integration with gap analysis
-- ✅ Citation management (APA, MLA, IEEE, Chicago)
+- ⚠️ Citation management: claim detection + bibliography work; inline placement/style switching still TODO
 - ✅ Template library with user customization
 - ✅ Interactive wizard for guided workflow
 - ✅ Export to PDF, DOCX, and HTML formats
@@ -979,6 +979,8 @@ Core platform features fully implemented:
 - [ ] Analytics if tracking progress over time
 - [ ] Automation scripts for repetitive workflows
 - [ ] Additional templates (analytical, comparative, narrative)
+- [ ] Inline citation placement + style switching
+- [ ] Save/resume wizard sessions
 
 ### Maintenance & Polish
 - [ ] Add more example files for testing
@@ -1040,7 +1042,7 @@ Use AI models not as ghostwriters, but as tireless critics and thinking partners
 
 ---
 
-**Last Updated**: November 24, 2024
+**Last Updated**: February 2025
 **Owner**: Stephen Witty (switty@level500.com)
 **Status**: Phases 1-4 Complete - Core platform ready for daily use
 **Next Review**: As needed for Phase 5 optional enhancements

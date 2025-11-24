@@ -23,13 +23,14 @@ uv run python -m src.essay research test_essay.txt --min-sources 3
 - If no API key is present, it uses the fallback search query.
 
 ## 3. Citation Generator
-Generate a bibliography for the essay (assuming sources were added or just testing the generator):
+Generate citation markers and a bibliography (sources must be present on the manager for a real bibliography):
 ```bash
 uv run python -m src.essay cite test_essay.txt --generate-bibliography --style apa
 ```
 **Expected Output**:
 - Analysis of claims (if AI model available).
-- A formatted bibliography in APA style (if sources were added/mocked).
+- `[citation needed]` markers inserted for detected claims in a new `_cited` file.
+- A formatted bibliography in APA style if sources were added/mocked; otherwise a warning that no sources are available.
 
 ## 4. Cleanup
 ```bash
