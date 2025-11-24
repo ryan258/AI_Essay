@@ -7,6 +7,7 @@ from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+from threading import Thread
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -44,6 +45,26 @@ class EssayCLI:
         except Exception as e:
             console.print(f"[red]Error initializing fallback model {fallback}: {e}[/red]")
             return None
+
+    def _run_coroutine_in_thread(self, coro):
+        """Run an async coroutine in a fresh thread to avoid nested event loop errors."""
+        result_holder = {}
+        error_holder = {}
+
+        def _runner():
+            try:
+                result_holder["value"] = asyncio.run(coro)
+            except Exception as exc:  # pragma: no cover - defensive
+                error_holder["error"] = exc
+
+        thread = Thread(target=_runner, daemon=True)
+        thread.start()
+        thread.join()
+
+        if "error" in error_holder:
+            raise error_holder["error"]
+
+        return result_holder.get("value", [])
 
     def research(self, input_file: str, min_sources: int = 3, auto_cite: bool = False, gap_analysis: bool = False, model: str = "anthropic/claude-3-haiku"):
         """
@@ -102,14 +123,24 @@ class EssayCLI:
             else:
                 console.print("[green]No significant research gaps found.[/green]")
 
-    def cite(self, input_file: str, style: str = "apa", generate_bibliography: bool = False, model: str = "anthropic/claude-3-haiku"):
+    def cite(
+        self,
+        input_file: str,
+        style: str = "apa",
+        generate_bibliography: bool = False,
+        model: str = "anthropic/claude-3-haiku",
+        output_file: str = None,
+        annotate_missing: bool = True,
+    ):
         """
-        Add citations to an essay.
+        Add citation markers and optionally append a bibliography.
 
         Args:
             input_file: Path to the essay file
             style: Citation style (apa, mla, chicago-author-date, ieee)
             generate_bibliography: Whether to append a bibliography
+            output_file: Optional output path for the cited essay
+            annotate_missing: Insert inline citation markers for detected claims
             model: AI model to use (default: anthropic/claude-3-haiku)
         """
         input_path = Path(input_file)
@@ -118,6 +149,7 @@ class EssayCLI:
             return
 
         text = input_path.read_text()
+        annotated_text = text
         
         # Initialize manager
         ai_model = self._init_model(model)
@@ -137,33 +169,54 @@ class EssayCLI:
             console.print(f"[green]Found {len(claims)} claims needing citation.[/green]")
             for i, claim in enumerate(claims, 1):
                 console.print(f"{i}. {claim}")
+            
+            if annotate_missing:
+                insertions = 0
+                for claim in claims:
+                    if claim in annotated_text:
+                        annotated_text = annotated_text.replace(
+                            claim, f"{claim} [citation needed]", 1
+                        )
+                        insertions += 1
+                if insertions:
+                    console.print(f"[green]Inserted {insertions} citation marker(s) into the text.[/green]")
+                else:
+                    console.print("[yellow]Detected claims but could not place markers (claims not found verbatim in text).[/yellow]")
         
         # 2. Generate bibliography if requested
+        bibliography_block = ""
         if generate_bibliography:
             # Add a dummy source for demonstration if none exist
             if not manager.sources:
-                manager.add_source({
-                    "id": "example-source",
-                    "type": "article-journal",
-                    "title": "Artificial Intelligence in Education",
-                    "author": [{"family": "Smith", "given": "John"}],
-                    "issued": {"date-parts": [[2023]]},
-                    "container-title": "Journal of EdTech"
-                })
+                console.print("[yellow]No sources available. Add sources via research before generating a bibliography.[/yellow]")
             
-            try:
-                bib = manager.generate_bibliography(style=style)
-                console.print(f"\n[bold]Bibliography ({style.upper()}):[/bold]")
-                console.print(bib)
-            except Exception as e:
-                console.print(f"[red]Error generating bibliography: {e}[/red]")
+            if manager.sources:
+                try:
+                    bib = manager.generate_bibliography(style=style)
+                    console.print(f"\n[bold]Bibliography ({style.upper()}):[/bold]")
+                    console.print(bib)
+                    bibliography_block = "\n\n## Bibliography\n" + "\n".join(
+                        f"- {line}" for line in bib.splitlines() if line.strip()
+                    )
+                except Exception as e:
+                    console.print(f"[red]Error generating bibliography: {e}[/red]")
 
             # Demonstrate inline citations
-            console.print(f"\n[bold]Inline Citation Examples ({style.upper()}):[/bold]")
-            for source in manager.sources:
-                citation = manager.format_citation(source['id'], style=style)
-                title = source.get('title', 'Unknown Title')
-                console.print(f"• {title}: [cyan]{citation}[/cyan]")
+            if manager.sources:
+                console.print(f"\n[bold]Inline Citation Examples ({style.upper()}):[/bold]")
+                for source in manager.sources:
+                    citation = manager.format_citation(source['id'], style=style)
+                    title = source.get('title', 'Unknown Title')
+                    console.print(f"• {title}: [cyan]{citation}[/cyan]")
+        
+        # Save annotated output if we made changes
+        if (annotate_missing and claims) or bibliography_block:
+            output_path = Path(output_file) if output_file else input_path.with_name(f"{input_path.stem}_cited{input_path.suffix}")
+            output_text = annotated_text + bibliography_block
+            output_path.write_text(output_text)
+            console.print(f"\n[green]Saved cited essay to {output_path}[/green]")
+        else:
+            console.print("\n[dim]No changes saved (no claims detected and no bibliography generated).[/dim]")
 
     def check_plagiarism(self, input_file: str, model: str = "anthropic/claude-3-haiku"):
         """
@@ -304,12 +357,10 @@ class EssayCLI:
 
         # Run async drafting with proper event loop handling
         try:
-            # Check if there's already a running event loop
             try:
-                loop = asyncio.get_running_loop()
-                # We're in an async context, can't use asyncio.run()
-                console.print("[yellow]Warning: Cannot run in existing event loop context[/yellow]")
-                return
+                asyncio.get_running_loop()
+                # Already in an event loop (e.g., notebook) – run in a helper thread.
+                results = self._run_coroutine_in_thread(drafter.draft_essay(topic, essay_dir))
             except RuntimeError:
                 # No running loop, safe to use asyncio.run()
                 results = asyncio.run(drafter.draft_essay(topic, essay_dir))
@@ -775,18 +826,49 @@ class EssayCLI:
         """
         Create a new template from an existing essay file (simplified).
         
-        For now, this just creates a placeholder template. 
-        Parsing structure from a raw text file is complex and overlaps with the Analyzer.
+        Derives a lightweight structure from the provided essay instead of a static stub.
         """
         manager = TemplateManager()
-        
-        # Simplified structure for custom templates
-        structure = [
-            {"title": "Introduction", "description": "Introduction section", "word_count": "flexible"},
-            {"title": "Body", "description": "Main content", "word_count": "flexible"},
-            {"title": "Conclusion", "description": "Conclusion section", "word_count": "flexible"}
-        ]
-        
+
+        source_path = Path(from_file)
+        if not source_path.exists():
+            console.print(f"[red]Error: Source file '{from_file}' not found.[/red]")
+            return
+
+        content = source_path.read_text().strip()
+        paragraphs = [p.strip() for p in content.split("\n\n") if p.strip()]
+
+        def _section_entry(title: str, paragraph: str) -> dict:
+            """Create a section definition from a paragraph snippet."""
+            words = paragraph.split()
+            snippet = " ".join(paragraph.split(".")[0].split()[:15])
+            desc = snippet + ("..." if snippet else "")
+            return {
+                "title": title,
+                "description": desc or "Section derived from source essay",
+                "word_count": len(words),
+            }
+
+        structure = []
+        if paragraphs:
+            # Intro from first paragraph
+            structure.append(_section_entry("Introduction", paragraphs[0]))
+
+            # Body paragraphs
+            body_paragraphs = paragraphs[1:-1] if len(paragraphs) > 2 else paragraphs[1:]
+            for idx, para in enumerate(body_paragraphs, 1):
+                structure.append(_section_entry(f"Body {idx}", para))
+
+            # Conclusion if present
+            if len(paragraphs) > 1:
+                structure.append(_section_entry("Conclusion", paragraphs[-1]))
+        else:
+            structure = [
+                {"title": "Introduction", "description": "Introduction section", "word_count": "flexible"},
+                {"title": "Body", "description": "Main content", "word_count": "flexible"},
+                {"title": "Conclusion", "description": "Conclusion section", "word_count": "flexible"},
+            ]
+
         if manager.create_template(name, description, structure):
             console.print(f"[green]Created new template '{name}'[/green]")
         else:

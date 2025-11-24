@@ -2,11 +2,11 @@
 
 This document tracks known issues, limitations, and external dependencies that affect AI Essay functionality.
 
-**Last Updated**: November 23, 2024
+**Last Updated**: February 2025
 
 ---
 
-## Phase 3: Research & Citations
+## Research & Citations
 
 ### Semantic Scholar API Performance
 
@@ -52,6 +52,18 @@ This document tracks known issues, limitations, and external dependencies that a
 
 ---
 
+### Citation Markers vs. Real Sources
+
+**Issue**: The `cite` command now inserts `[citation needed]` markers and can append a bibliography, but it does not automatically fetch sources. Bibliography output requires `CitationManager.sources` to be populated (e.g., via research results you add manually).
+
+**Impact**: Users may expect inline citations to appear automatically; they will only see markers unless they supply sources.
+
+**Workaround**:
+- Run research first and add sources to the manager before generating a bibliography.
+- Keep the generated `_cited` file as a checklist and replace markers manually once sources are chosen.
+
+---
+
 ## Testing Infrastructure
 
 ### Module Import Path
@@ -60,37 +72,7 @@ This document tracks known issues, limitations, and external dependencies that a
 
 **Fix**: Added `tests/conftest.py` to add project root to Python path.
 
-**Status**: ✅ RESOLVED (November 23, 2024)
-
----
-
-## Missing Features (Roadmap Items)
-
-### Phase 1: Core Essay Creation - NOT STARTED
-
-The following features from the roadmap are not yet implemented:
-- Multi-model essay drafting
-- Essay structure analyzer
-- Basic improvement engine
-
-**Reason**: Phase 3 was built first as a proof-of-concept for research capabilities.
-
-**Impact**: Research and citation features work on existing essays, but can't create essays from scratch yet.
-
-**Workaround**: Use external tools (ChatGPT, Claude) to create initial drafts, then use Phase 3 features to add citations/research.
-
-**Next Steps**: Prioritize Phase 1 implementation to create end-to-end essay platform.
-
----
-
-### Phase 2: Intelligence & Polish - NOT STARTED
-
-Advanced features not yet available:
-- Smart outline generator
-- Grammar & clarity optimizer
-- Argument analyzer & strengthener
-
-**Workaround**: Use external tools like Grammarly, Hemingway Editor for grammar/clarity.
+**Status**: ✅ RESOLVED
 
 ---
 
