@@ -4,6 +4,7 @@ import pytest
 from unittest.mock import Mock, patch
 from pathlib import Path
 from src.citations import CitationManager
+from src.exceptions import CitationError
 
 @pytest.fixture
 def mock_model():
@@ -27,10 +28,11 @@ def test_add_source(manager):
     assert manager.sources[0]['id'] == "source-1"
 
 def test_generate_bibliography_missing_style(manager):
-    manager.add_source({"id": "1", "title": "Test", "type": "article-journal"})
+    """Test error handling for unsupported style."""
+    manager.add_source({"title": "Test Source", "author": [{"family": "Doe", "given": "John"}], "issued": {"date-parts": [[2023]]}, "type": "article-journal"})
     
     # Test with non-existent style
-    with pytest.raises(ValueError):
+    with pytest.raises(CitationError):
         manager.generate_bibliography(style="non_existent_style")
 
 def test_generate_bibliography_valid(manager):

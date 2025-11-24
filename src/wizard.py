@@ -13,6 +13,7 @@ from .templates import TemplateManager
 from .research import ResearchAssistant
 from .drafter import EssayDrafter
 from .models.openrouter import OpenRouterModel
+from .config import config
 
 console = Console()
 
@@ -21,7 +22,7 @@ class EssayWizard:
 
     def __init__(self):
         # Initialize with a default model for research/drafting
-        self.model_name = os.getenv("OPENROUTER_MODEL", "anthropic/claude-3-haiku")
+        self.model_name = os.getenv("OPENROUTER_MODEL", config.DEFAULT_MODEL)
         self.template_manager = TemplateManager()
 
     def run(self):

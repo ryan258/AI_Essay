@@ -26,6 +26,7 @@ from .models.openrouter import OpenRouterModel
 from .templates import TemplateManager
 from .wizard import EssayWizard
 from .export import Exporter
+from .config import config
 import asyncio
 
 console = Console()
@@ -33,7 +34,7 @@ console = Console()
 class EssayCLI:
     """CLI for the Essay Maker Platform."""
 
-    def _init_model(self, model_name: str = None, role_env: str = None, fallback: str = "anthropic/claude-3-haiku") -> OpenRouterModel:
+    def _init_model(self, model_name: str = None, role_env: str = None, fallback: str = config.DEFAULT_MODEL) -> OpenRouterModel:
         """
         Initialize AI model with env-aware fallback.
 
@@ -79,7 +80,7 @@ class EssayCLI:
 
         return result_holder.get("value", [])
 
-    def research(self, input_file: str, min_sources: int = 3, auto_cite: bool = False, gap_analysis: bool = False, model: str = "anthropic/claude-3-haiku"):
+    def research(self, input_file: str, min_sources: int = 3, auto_cite: bool = False, gap_analysis: bool = False, model: str = None):
         """
         Research topics for an essay.
 
@@ -90,6 +91,9 @@ class EssayCLI:
             gap_analysis: Whether to perform research gap analysis
             model: AI model to use (default: anthropic/claude-3-haiku)
         """
+        if model is None:
+            model = config.DEFAULT_MODEL
+
         input_path = Path(input_file)
         if not input_path.exists():
             console.print(f"[red]Error: File {input_file} not found.[/red]")
@@ -180,7 +184,7 @@ class EssayCLI:
         input_file: str,
         style: str = "apa",
         generate_bibliography: bool = False,
-        model: str = "anthropic/claude-3-haiku",
+        model: str = None,
         output_file: str = None,
         annotate_missing: bool = True,
         auto_insert: bool = True,
@@ -201,6 +205,8 @@ class EssayCLI:
             lenient_fallback: If True, use the first source when no keywords match (may be less relevant)
             model: AI model to use (default: anthropic/claude-3-haiku)
         """
+        if model is None:
+            model = config.DEFAULT_MODEL
         input_path = Path(input_file)
         if not input_path.exists():
             console.print(f"[red]Error: File {input_file} not found.[/red]")
@@ -348,7 +354,7 @@ class EssayCLI:
         else:
             console.print("\n[dim]No changes saved (no claims detected and no bibliography generated).[/dim]")
 
-    def check_plagiarism(self, input_file: str, model: str = "anthropic/claude-3-haiku"):
+    def check_plagiarism(self, input_file: str, model: str = None):
         """
         Check an essay for potential plagiarism (uncited quotes).
 
@@ -356,6 +362,9 @@ class EssayCLI:
             input_file: Path to the essay file
             model: AI model to use
         """
+        if model is None:
+            model = config.DEFAULT_MODEL
+
         input_path = Path(input_file)
         if not input_path.exists():
             console.print(f"[red]Error: File {input_file} not found.[/red]")
@@ -363,7 +372,7 @@ class EssayCLI:
 
         text = input_path.read_text()
 
-        ai_model = self._init_model(model, role_env="MODEL_SUMMARIZE")
+        ai_model = self._init_model(model, role_env="MODEL_FACTCHECK")
         if not ai_model:
             return
 
@@ -379,7 +388,7 @@ class EssayCLI:
             for i, issue in enumerate(issues, 1):
                 console.print(f"{i}. {issue}")
 
-    def summarize(self, query: str, limit: int = 3, model: str = "anthropic/claude-3-haiku"):
+    def summarize(self, query: str, limit: int = 3, model: str = None):
         """
         Find and summarize sources for a topic.
 
@@ -388,6 +397,9 @@ class EssayCLI:
             limit: Number of sources
             model: AI model to use
         """
+        if model is None:
+            model = config.DEFAULT_MODEL
+
         try:
             ai_model = OpenRouterModel(model_name=model)
             assistant = ResearchAssistant(model=ai_model)
@@ -408,7 +420,7 @@ class EssayCLI:
             console.print(f"   [italic]{summary}[/italic]")
             console.print(f"   URL: {paper['url']}\n")
 
-    def check_facts(self, input_file: str, claim: str, model: str = "anthropic/claude-3-haiku"):
+    def check_facts(self, input_file: str, claim: str, model: str = None):
         """
         Verify a specific claim using research from the essay's topic.
 
@@ -417,6 +429,9 @@ class EssayCLI:
             claim: The claim to verify
             model: AI model to use
         """
+        if model is None:
+            model = config.DEFAULT_MODEL
+
         input_path = Path(input_file)
         if not input_path.exists():
             console.print(f"[red]Error: File {input_file} not found.[/red]")
@@ -452,7 +467,7 @@ class EssayCLI:
         
         console.print(f"\n[bold]Explanation:[/bold] {result.get('explanation', 'No explanation provided.')}")
 
-    def draft(self, topic: str, models: str = "anthropic/claude-3-haiku,openai/gpt-3.5-turbo", output_dir: str = "drafts"):
+    def draft(self, topic: str, models: str = None, output_dir: str = "drafts"):
         """
         Draft an essay using multiple AI models in parallel.
 
@@ -462,6 +477,9 @@ class EssayCLI:
             output_dir: Directory to save drafts
         """
         from datetime import datetime
+
+        if models is None:
+            models = f"{config.DEFAULT_MODEL},openai/gpt-3.5-turbo"
 
         model_list = [m.strip() for m in models.split(',')]
         console.print(Panel(f"Drafting essay on '{topic}' using {len(model_list)} models...", title="Essay Drafter"))
@@ -528,7 +546,7 @@ class EssayCLI:
         essay_text = input_path.read_text()
 
         # Initialize analyzer
-        ai_model = self._init_model(model, role_env="MODEL_FACTCHECK")
+        ai_model = self._init_model(model, role_env="MODEL_ANALYZE")
         analyzer = EssayAnalyzer(model=ai_model)
 
         console.print(Panel(f"Analyzing structure of {input_file}...", title="Essay Analyzer"))

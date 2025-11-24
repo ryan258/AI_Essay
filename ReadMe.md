@@ -57,7 +57,30 @@ OPENROUTER_API_KEY=your_key_here
 
 Get an API key from https://openrouter.ai/keys
 
-### 3. Install System Dependencies (for PDF export)
+### 3. (Optional) Advanced Configuration
+
+For additional customization, create a `config.yaml` file:
+
+```bash
+cp config.yaml.example config.yaml
+```
+
+Edit `config.yaml` to customize default settings:
+
+```yaml
+defaults:
+  max_tokens: 1000     # Maximum tokens for API responses
+  temperature: 1.0     # Creativity level (0.0-2.0)
+  retry_limit: 3       # Retry attempts for failed API calls
+```
+
+**Configuration Precedence** (highest to lowest):
+1. **CLI arguments** - Flags like `--model`, `--temperature` override everything
+2. **Environment variables** - Settings in `.env` file
+3. **Config file** - Settings in `config.yaml`
+4. **Default values** - Built-in fallbacks
+
+### 4. Install System Dependencies (for PDF export)
 
 ```bash
 # macOS

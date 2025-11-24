@@ -1,0 +1,18 @@
+# AI Essay Configuration
+# Copy this file to config.yaml and customize as needed
+# Note: Environment variables take precedence over these settings
+
+# Default model settings
+defaults:
+  # Maximum tokens for API responses
+  max_tokens: 1000
+
+  # Temperature for text generation (0.0 - 2.0)
+  # Higher values = more creative/random
+  temperature: 1.0
+
+  # Number of retry attempts for failed API calls
+  retry_limit: 3
+
+# Note: The default model is set via the OPENROUTER_MODEL environment variable
+# or falls back to "anthropic/claude-3-haiku" if not set

@@ -1,8 +1,10 @@
 """Tests for OpenRouterModel."""
 
+import os
 import pytest
 from unittest.mock import Mock, patch
 from src.models.openrouter import OpenRouterModel
+from src.exceptions import ModelError
 
 @pytest.fixture
 def mock_env_api_key(monkeypatch):
@@ -17,10 +19,11 @@ def test_init_with_explicit_key():
     model = OpenRouterModel(model_name="test-model", api_key="explicit_key")
     assert model.api_key == "explicit_key"
 
-def test_init_missing_key(monkeypatch):
-    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
-    with pytest.raises(ValueError, match="OpenRouter API key not found"):
-        OpenRouterModel(model_name="test-model")
+def test_init_missing_key():
+    """Test initialization without API key."""
+    with patch.dict(os.environ, {}, clear=True):
+        with pytest.raises(ModelError):
+            OpenRouterModel(model_name="test-model", api_key=None)
 
 @patch("src.models.openrouter.OpenAI")
 def test_call_success(mock_openai, mock_env_api_key):

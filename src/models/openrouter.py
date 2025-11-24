@@ -5,6 +5,7 @@ from typing import Tuple
 from openai import OpenAI
 
 from .base import AIModel
+from ..exceptions import ModelError
 
 
 # Model mappings removed in favor of direct model ID usage
@@ -51,7 +52,7 @@ class OpenRouterModel(AIModel):
         # Get API key
         self.api_key = api_key or os.getenv('OPENROUTER_API_KEY')
         if not self.api_key:
-            raise ValueError(
+            raise ModelError(
                 "OpenRouter API key not found. "
                 "Set OPENROUTER_API_KEY environment variable or pass api_key parameter."
             )

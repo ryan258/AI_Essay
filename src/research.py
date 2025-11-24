@@ -10,11 +10,7 @@ from semanticscholar import SemanticScholar
 from semanticscholar.PaginatedResults import PaginatedResults
 
 from .models.base import AIModel
-
-# Constants
-MAX_ESSAY_LENGTH = 2000  # Token limit for API call
-DEFAULT_SEARCH_LIMIT = 5
-API_TIMEOUT = 30  # seconds
+from .config import config
 
 @contextmanager
 def timeout(seconds):
@@ -43,9 +39,9 @@ class ResearchAssistant:
             model: AIModel instance for analysis
         """
         self.model = model
-        self.sch = SemanticScholar(timeout=API_TIMEOUT)
+        self.sch = SemanticScholar(timeout=config.API_TIMEOUT)
 
-    def search_papers(self, query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> List[Dict[str, Any]]:
+    def search_papers(self, query: str, limit: int = config.DEFAULT_SEARCH_LIMIT) -> List[Dict[str, Any]]:
         """
         Search for academic papers.
 
@@ -110,7 +106,7 @@ class ResearchAssistant:
 
         # 1. Extract key topics/queries from essay
         # Truncate for token limits if needed
-        truncated_text = essay_text[:MAX_ESSAY_LENGTH] 
+        truncated_text = essay_text[:config.MAX_ESSAY_LENGTH] 
         prompt = (
             "Analyze the following essay and generate 3 specific search queries "
             "to find academic papers that would support its arguments. "
@@ -264,7 +260,7 @@ class ResearchAssistant:
             return ["AI model unavailable for gap analysis."]
 
         # Truncate for token limits
-        truncated_text = essay_text[:MAX_ESSAY_LENGTH]
+        truncated_text = essay_text[:config.MAX_ESSAY_LENGTH]
         prompt = (
             "Analyze the following essay and identify 3-5 specific areas where "
             "additional research or evidence is needed to strengthen the argument. "

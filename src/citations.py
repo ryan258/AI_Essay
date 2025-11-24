@@ -12,6 +12,7 @@ from citeproc import formatter
 from citeproc.source.json import CiteProcJSON
 
 from .models.base import AIModel
+from .exceptions import CitationError
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -21,16 +22,16 @@ InlineSuggestion = Dict[str, str]
 class CitationManager:
     """Manages citations, source lookups, and bibliography generation."""
 
-    def __init__(self, model: Optional[AIModel] = None):
+    def __init__(self, model: Optional[AIModel] = None, crossref_client: Optional[Crossref] = None):
         """
         Initialize citation manager.
 
         Args:
             model: AIModel instance for claim detection
+            crossref_client: Optional Crossref client for dependency injection
         """
         self.model = model
-        self.cr = Crossref()
-        self.cr = Crossref()
+        self.cr = crossref_client or Crossref()
         self.sources: List[Dict[str, Any]] = []
         self._ieee_source_map: Dict[str, int] = {}  # Map source ID to IEEE number
 
@@ -106,7 +107,7 @@ class CitationManager:
         """
         supported_styles = ["apa", "mla", "chicago-author-date", "ieee"]
         if style not in supported_styles:
-            raise ValueError(f"Unsupported style: {style}. Choose from {supported_styles}")
+            raise CitationError(f"Unsupported style: {style}. Choose from {supported_styles}")
 
         if not self.sources:
             return ""
@@ -126,7 +127,7 @@ class CitationManager:
             else:
                 # List available styles
                 available = [f.stem for f in styles_dir.glob("*.csl")]
-                raise FileNotFoundError(
+                raise CitationError(
                     f"Style file {style}.csl not found in {styles_dir}. "
                     f"Available styles: {', '.join(available)}"
                 )
@@ -134,7 +135,7 @@ class CitationManager:
         try:
             bib_style = CitationStylesStyle(str(style_path), validate=False)
         except Exception as e:
-            raise ValueError(f"Error loading style {style}: {e}")
+            raise CitationError(f"Error loading style {style}: {e}")
 
         bibliography = CitationStylesBibliography(bib_style, bib_source, formatter.plain)
 
