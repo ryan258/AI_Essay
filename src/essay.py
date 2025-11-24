@@ -42,7 +42,7 @@ class EssayCLI:
             console.print(f"[red]Error initializing fallback model {fallback}: {e}[/red]")
             return None
 
-    def research(self, input_file: str, min_sources: int = 3, auto_cite: bool = False, model: str = "anthropic/claude-3-haiku"):
+    def research(self, input_file: str, min_sources: int = 3, auto_cite: bool = False, gap_analysis: bool = False, model: str = "anthropic/claude-3-haiku"):
         """
         Research topics for an essay.
 
@@ -50,6 +50,7 @@ class EssayCLI:
             input_file: Path to the essay file
             min_sources: Minimum number of sources to find
             auto_cite: Whether to automatically add citations (not implemented yet)
+            gap_analysis: Whether to perform research gap analysis
             model: AI model to use (default: anthropic/claude-3-haiku)
         """
         input_path = Path(input_file)
@@ -86,6 +87,17 @@ class EssayCLI:
             console.print(f"   Citations: {paper['citationCount']}")
             console.print(f"   URL: {paper['url']}")
             console.print()
+
+        # Perform gap analysis if requested
+        if gap_analysis:
+            console.print(Panel("Analyzing Research Gaps...", title="Gap Analysis"))
+            gaps = assistant.find_research_gaps(text)
+            if gaps:
+                console.print("[bold]Recommended Research Areas:[/bold]")
+                for i, gap in enumerate(gaps, 1):
+                    console.print(f"{i}. {gap}")
+            else:
+                console.print("[green]No significant research gaps found.[/green]")
 
     def cite(self, input_file: str, style: str = "apa", generate_bibliography: bool = False, model: str = "anthropic/claude-3-haiku"):
         """
@@ -142,6 +154,13 @@ class EssayCLI:
                 console.print(bib)
             except Exception as e:
                 console.print(f"[red]Error generating bibliography: {e}[/red]")
+
+            # Demonstrate inline citations
+            console.print(f"\n[bold]Inline Citation Examples ({style.upper()}):[/bold]")
+            for source in manager.sources:
+                citation = manager.format_citation(source['id'], style=style)
+                title = source.get('title', 'Unknown Title')
+                console.print(f"• {title}: [cyan]{citation}[/cyan]")
 
     def check_plagiarism(self, input_file: str, model: str = "anthropic/claude-3-haiku"):
         """

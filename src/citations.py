@@ -27,7 +27,9 @@ class CitationManager:
         """
         self.model = model
         self.cr = Crossref()
+        self.cr = Crossref()
         self.sources: List[Dict[str, Any]] = []
+        self._ieee_source_map: Dict[str, int] = {}  # Map source ID to IEEE number
 
     def find_claims(self, text: str) -> List[str]:
         """
@@ -160,16 +162,38 @@ class CitationManager:
         if not source:
             return "(Source not found)"
 
-        # Simple fallback for now
-        author = "Unknown"
+        # Extract metadata
+        author_last = "Unknown"
         if 'author' in source and source['author']:
-            author = source['author'][0].get('family', 'Unknown')
+            author_last = source['author'][0].get('family', 'Unknown')
         
         year = "n.d."
         if 'issued' in source and 'date-parts' in source['issued']:
              year = source['issued']['date-parts'][0][0]
 
-        return f"({author}, {year})"
+        # Format based on style
+        style = style.lower()
+        
+        if style == "apa":
+            return f"({author_last}, {year})"
+            
+        elif style == "mla":
+            # MLA is usually (Author Page), but we often lack page numbers in metadata
+            return f"({author_last})"
+            
+        elif style == "chicago-author-date":
+            return f"({author_last} {year})"
+            
+        elif style == "ieee":
+            # IEEE uses [1], [2] based on order of appearance
+            if source_id not in self._ieee_source_map:
+                self._ieee_source_map[source_id] = len(self._ieee_source_map) + 1
+            number = self._ieee_source_map[source_id]
+            return f"[{number}]"
+            
+        else:
+            # Fallback to APA-like
+            return f"({author_last}, {year})"
 
     def check_plagiarism(self, text: str) -> List[str]:
         """

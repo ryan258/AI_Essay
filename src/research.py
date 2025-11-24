@@ -249,3 +249,34 @@ class ResearchAssistant:
         if success:
             return response.strip()
         return "Failed to generate summary."
+
+    def find_research_gaps(self, essay_text: str) -> List[str]:
+        """
+        Identify missing research areas or weak arguments needing evidence.
+
+        Args:
+            essay_text: The essay content
+
+        Returns:
+            List of research recommendations
+        """
+        if not self.model:
+            return ["AI model unavailable for gap analysis."]
+
+        # Truncate for token limits
+        truncated_text = essay_text[:MAX_ESSAY_LENGTH]
+        prompt = (
+            "Analyze the following essay and identify 3-5 specific areas where "
+            "additional research or evidence is needed to strengthen the argument. "
+            "Focus on weak claims, unexplored angles, or missing context. "
+            "Return ONLY the recommendations, one per line.\n\n"
+            f"Essay:\n{truncated_text}..."
+        )
+
+        success, response, error = self.model.call(prompt)
+        if not success:
+            logger.error(f"Failed to find research gaps: {error}")
+            return []
+
+        recommendations = [line.strip() for line in response.split('\n') if line.strip()]
+        return recommendations
