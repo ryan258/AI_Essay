@@ -21,6 +21,7 @@ from .optimizer import GrammarOptimizer
 from .argument import ArgumentAnalyzer
 from .models.openrouter import OpenRouterModel
 from .templates import TemplateManager
+from .wizard import EssayWizard
 import asyncio
 
 console = Console()
@@ -789,6 +790,13 @@ class EssayCLI:
             console.print(f"[green]Created new template '{name}'[/green]")
         else:
             console.print(f"[red]Failed to create template '{name}'[/red]")
+
+    def wizard(self):
+        """
+        Start the interactive essay creation wizard.
+        """
+        wizard = EssayWizard()
+        wizard.run()
 
 
 def main():
