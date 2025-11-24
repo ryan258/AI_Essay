@@ -64,3 +64,33 @@ def test_best_source_for_claim_no_match_returns_first(manager):
     claim = "Economics theory suggests"
     source = manager._best_source_for_claim(claim, lenient=True)
     assert source["id"] == "1"
+
+
+def test_best_source_for_claim_no_match_strict_returns_none(manager):
+    manager.add_source({"id": "1", "title": "Quantum Physics", "abstract": ""})
+    claim = "Economics theory suggests"
+    source = manager._best_source_for_claim(claim, lenient=False)
+    assert source is None
+
+
+def test_cite_no_sources_auto_insert_does_not_write(tmp_path, monkeypatch):
+    """When no sources exist and auto_insert=True, cite should not write output if nothing changes."""
+    essay_file = tmp_path / "essay.txt"
+    essay_file.write_text("This is a claim without sources.")
+
+    # Patch CitationManager to avoid AI calls
+    with patch("src.essay.CitationManager") as mock_manager_cls:
+        mock_manager = Mock()
+        mock_manager.find_claims.return_value = ["This is a claim without sources."]
+        mock_manager.sources = []
+        mock_manager.generate_bibliography.return_value = ""
+        mock_manager.format_citation.return_value = "(X)"
+        mock_manager_cls.return_value = mock_manager
+
+        from src.essay import EssayCLI
+
+        cli = EssayCLI()
+        cli.cite(str(essay_file), auto_insert=True, annotate_missing=False, generate_bibliography=False, model=None)
+
+    cited_file = essay_file.with_name("essay_cited.txt")
+    assert not cited_file.exists()

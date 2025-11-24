@@ -239,6 +239,8 @@ class EssayCLI:
             inserted = 0
             if auto_insert and manager.sources:
                 suggestions = manager.suggest_inline_citations(text, claims, style=inline_style, lenient=lenient_fallback)
+                suggested_claims = {s["claim"] for s in suggestions}
+                skipped_claims = [c for c in claims if c not in suggested_claims]
                 for s in suggestions:
                     claim = s["claim"]
                     citation = s["citation"]
@@ -257,6 +259,8 @@ class EssayCLI:
                     console.print(f"[green]Inserted {inserted} inline citation(s) using {inline_style.upper()}.[/green]")
                 else:
                     console.print("[yellow]Could not place inline citations (claims not found verbatim in text).[/yellow]")
+                if skipped_claims and not lenient_fallback:
+                    console.print(f"[yellow]{len(skipped_claims)} claim(s) had no relevant sources (use --lenient-fallback to cite anyway).[/yellow]")
                 # Replace any remaining markers with leftover citations in order
                 remaining_markers = annotated_text.count("[citation needed]")
                 if remaining_markers and manager.sources:

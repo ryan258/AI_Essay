@@ -32,6 +32,10 @@ uv run python -m src.essay cite test_essay.txt --generate-bibliography --style a
 - Inline citations inserted when sources are present; otherwise `[citation needed]` markers are added in a new `_cited` file.
 - A formatted bibliography in APA style if sources were added/mocked; otherwise a warning that no sources are available.
 
+**Tips**:
+- The cite command looks for `test_essay_sources.json` (created by the `research` command) and auto-loads sources if present.
+- Inline mapping is strict by default. If you want every claim to get a citation even when no keywords match, pass `--lenient-fallback` (may insert less relevant sources).
+
 ## 4. Cleanup
 ```bash
 rm test_essay.txt

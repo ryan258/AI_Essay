@@ -272,10 +272,9 @@ class CitationManager:
             "the", "and", "for", "are", "was", "but", "not", "you", "all", "can",
             "her", "has", "had", "with", "from", "that", "this", "they", "them",
             "their", "its", "into", "onto", "about", "over", "under", "an", "is",
-            "be", "been", "being", "have", "has", "had", "do", "does", "did", "he",
-            "she", "it", "we", "us", "him", "his", "in", "on", "at", "by", "to",
-            "of", "or", "if", "when", "where", "while", "may", "will", "would",
-            "could", "should"
+            "be", "been", "being", "have", "do", "does", "did", "he", "she", "it",
+            "we", "us", "him", "his", "in", "on", "at", "by", "to", "of", "or",
+            "if", "when", "where", "while", "may", "will", "would", "could", "should"
         }
         technical_terms = {"ai", "ml", "dl", "nlp", "cv", "rl", "go", "c++", "api", "sql"}
         keywords = {

@@ -180,7 +180,8 @@ Then add citations:
 ```bash
 uv run python -m src.essay cite my_draft.txt \
     --style APA \
-    --generate-bibliography
+    --generate-bibliography \
+    --lenient-fallback  # optional: use when you want every claim to get a citation even if relevance is low
 ```
 
 **Output**: Essay with inline citations and full bibliography.
