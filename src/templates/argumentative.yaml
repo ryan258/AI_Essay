@@ -1,0 +1,20 @@
+description: "Standard 5-paragraph argumentative essay structure."
+structure:
+  - title: "Introduction"
+    description: "Hook the reader, provide background context, and state your thesis clearly."
+    word_count: 150
+  - title: "Body Paragraph 1: First Argument"
+    description: "Present your strongest point with supporting evidence."
+    word_count: 200
+  - title: "Body Paragraph 2: Second Argument"
+    description: "Present your second point with supporting evidence."
+    word_count: 200
+  - title: "Body Paragraph 3: Counter-argument"
+    description: "Address opposing views and refute them."
+    word_count: 200
+  - title: "Conclusion"
+    description: "Restate thesis in a new way, summarize main points, and provide a final thought."
+    word_count: 150
+metadata:
+  type: "academic"
+  difficulty: "beginner"

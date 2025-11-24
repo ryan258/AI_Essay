@@ -20,6 +20,7 @@ from .outline import OutlineGenerator, OutlineTemplate, ExportFormat
 from .optimizer import GrammarOptimizer
 from .argument import ArgumentAnalyzer
 from .models.openrouter import OpenRouterModel
+from .templates import TemplateManager
 import asyncio
 
 console = Console()
@@ -714,6 +715,80 @@ class EssayCLI:
             console.print("\n[bold]Suggestions for Improvement:[/bold]")
             for i, suggestion in enumerate(analysis.suggestions, 1):
                 console.print(f"{i}. {suggestion}")
+
+    def templates(self, action: str = "list", name: str = None):
+        """
+        Manage essay templates.
+
+        Args:
+            action: Action to perform (list)
+            name: Template name (for future use)
+        """
+        manager = TemplateManager()
+        
+        if action == "list":
+            templates = manager.list_templates()
+            console.print(Panel("Available Essay Templates", title="Template Library"))
+            
+            table = Table(show_header=True, header_style="bold")
+            table.add_column("Name", style="cyan")
+            table.add_column("Type", style="white")
+            table.add_column("Description", style="dim")
+            
+            for t in templates:
+                table.add_row(t["name"], t["type"], t["description"])
+            
+            console.print(table)
+        else:
+            console.print(f"[red]Unknown action: {action}[/red]")
+
+    def new(self, topic: str, template: str = "argumentative", output_file: str = None):
+        """
+        Create a new essay from a template.
+
+        Args:
+            topic: Essay topic
+            template: Template name
+            output_file: Output file path (optional)
+        """
+        manager = TemplateManager()
+        tmpl = manager.get_template(template)
+        
+        if not tmpl:
+            console.print(f"[red]Error: Template '{template}' not found.[/red]")
+            console.print("Run 'uv run essay.py templates list' to see available templates.")
+            return
+
+        content = manager.render_template(tmpl, topic)
+        
+        if output_file:
+            path = Path(output_file)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content)
+            console.print(f"[green]Created new essay from template '{template}' at {output_file}[/green]")
+        else:
+            console.print(content)
+
+    def template_create(self, from_file: str, name: str, description: str = "Custom template"):
+        """
+        Create a new template from an existing essay file (simplified).
+        
+        For now, this just creates a placeholder template. 
+        Parsing structure from a raw text file is complex and overlaps with the Analyzer.
+        """
+        manager = TemplateManager()
+        
+        # Simplified structure for custom templates
+        structure = [
+            {"title": "Introduction", "description": "Introduction section", "word_count": "flexible"},
+            {"title": "Body", "description": "Main content", "word_count": "flexible"},
+            {"title": "Conclusion", "description": "Conclusion section", "word_count": "flexible"}
+        ]
+        
+        if manager.create_template(name, description, structure):
+            console.print(f"[green]Created new template '{name}'[/green]")
+        else:
+            console.print(f"[red]Failed to create template '{name}'[/red]")
 
 
 def main():

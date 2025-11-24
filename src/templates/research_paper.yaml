@@ -1,0 +1,23 @@
+description: "Standard academic research paper structure."
+structure:
+  - title: "Abstract"
+    description: "Brief summary of the entire paper (write this last)."
+    word_count: 200
+  - title: "Introduction"
+    description: "Introduce the topic, problem statement, and research questions."
+    word_count: 300
+  - title: "Literature Review"
+    description: "Survey existing research and identify gaps."
+    word_count: 500
+  - title: "Methodology"
+    description: "Explain how you conducted your research or analysis."
+    word_count: 300
+  - title: "Results & Discussion"
+    description: "Present your findings and interpret their meaning."
+    word_count: 600
+  - title: "Conclusion"
+    description: "Summarize findings, implications, and future research directions."
+    word_count: 300
+metadata:
+  type: "academic"
+  difficulty: "advanced"
