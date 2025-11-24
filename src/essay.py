@@ -173,6 +173,7 @@ class EssayCLI:
         annotate_missing: bool = True,
         auto_insert: bool = True,
         switch_to: str = None,
+        lenient_fallback: bool = False,
     ):
         """
         Add citation markers and optionally append a bibliography.
@@ -185,6 +186,7 @@ class EssayCLI:
             annotate_missing: Insert inline citation markers for detected claims
             auto_insert: Insert inline citations using available sources
             switch_to: Convert inline citations/bibliography to this style (overrides style)
+            lenient_fallback: If True, use the first source when no keywords match (may be less relevant)
             model: AI model to use (default: anthropic/claude-3-haiku)
         """
         input_path = Path(input_file)
@@ -195,9 +197,6 @@ class EssayCLI:
         text = input_path.read_text()
         annotated_text = text
         inline_style = switch_to or style
-        # Track whether sources were loaded successfully (for potential future logging)
-        loaded_sources = False
-        
         # Initialize manager
         ai_model = self._init_model(model)
         if ai_model:
@@ -220,7 +219,6 @@ class EssayCLI:
                         valid_sources.append(src)
                 if valid_sources:
                     manager.sources.extend(valid_sources)
-                    loaded_sources = True
                     console.print(f"[dim]Loaded {len(valid_sources)} source(s) from {sources_path}[/dim]")
             except json.JSONDecodeError as e:
                 console.print(f"[yellow]Warning: Corrupt sources file ({e})[/yellow]")
@@ -240,7 +238,7 @@ class EssayCLI:
 
             inserted = 0
             if auto_insert and manager.sources:
-                suggestions = manager.suggest_inline_citations(text, claims, style=inline_style)
+                suggestions = manager.suggest_inline_citations(text, claims, style=inline_style, lenient=lenient_fallback)
                 for s in suggestions:
                     claim = s["claim"]
                     citation = s["citation"]
@@ -325,7 +323,8 @@ class EssayCLI:
                     console.print(f"• {title}: [cyan]{citation}[/cyan]")
         
         # Save annotated output if we made changes
-        if ((annotate_missing or auto_insert) and claims) or bibliography_block:
+        made_inline_changes = inserted > 0 or (annotate_missing and claims)
+        if made_inline_changes or bibliography_block:
             output_path = Path(output_file) if output_file else input_path.with_name(f"{input_path.stem}_cited{input_path.suffix}")
             output_text = annotated_text + bibliography_block
             output_path.write_text(output_text)

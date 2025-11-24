@@ -62,5 +62,5 @@ def test_best_source_for_claim_keyword_match(manager):
 def test_best_source_for_claim_no_match_returns_first(manager):
     manager.add_source({"id": "1", "title": "Quantum Physics", "abstract": ""})
     claim = "Economics theory suggests"
-    source = manager._best_source_for_claim(claim)
+    source = manager._best_source_for_claim(claim, lenient=True)
     assert source["id"] == "1"

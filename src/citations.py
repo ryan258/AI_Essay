@@ -233,7 +233,8 @@ class CitationManager:
         self,
         text: str,
         claims: List[str],
-        style: str = "apa"
+        style: str = "apa",
+        lenient: bool = False
     ) -> List[InlineSuggestion]:
         """
         Suggest inline citations for detected claims using available sources.
@@ -251,15 +252,19 @@ class CitationManager:
 
         suggestions: List[InlineSuggestion] = []
         for claim in claims:
-            source = self._best_source_for_claim(claim)
+            source = self._best_source_for_claim(claim, lenient=lenient)
             if not source:
                 continue
             citation = self.format_citation(source["id"], style=style)
             suggestions.append({"claim": claim, "citation": citation})
         return suggestions
 
-    def _best_source_for_claim(self, claim: str) -> Optional[Dict[str, Any]]:
-        """Pick the source with the most keyword overlap with the claim."""
+    def _best_source_for_claim(self, claim: str, lenient: bool = False) -> Optional[Dict[str, Any]]:
+        """Pick the source with the most keyword overlap with the claim.
+
+        If lenient is False, returns None when no keywords match any source.
+        If lenient is True, falls back to the first source.
+        """
         if not self.sources:
             return None
 
@@ -298,5 +303,6 @@ class CitationManager:
         MIN_MATCH_SCORE = 1
         if best_score >= MIN_MATCH_SCORE:
             return best
-        # Fallback: return first source so every claim can be cited even if relevance is low
-        return self.sources[0] if self.sources else None
+        if lenient:
+            return self.sources[0] if self.sources else None
+        return None
